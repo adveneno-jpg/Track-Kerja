@@ -14,60 +14,65 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Kustom scrollbar untuk paparan lebih kemas */
+        /* Kustom scrollbar untuk paparan tema biru gelap */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        /* Pembetulan warna ikon kalendar input date pada tema gelap */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.85);
+            cursor: pointer;
+        }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 antialiased flex flex-col justify-between">
+<body class="bg-slate-950 min-h-screen text-slate-100 antialiased flex flex-col justify-between selection:bg-blue-600 selection:text-white">
 
     <!-- NOTIFIKASI TOAST -->
-    <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-150%] opacity-0 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 pointer-events-none">
+    <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-150%] opacity-0 bg-slate-900/95 backdrop-blur-md border border-slate-700/70 text-slate-100 px-5 py-3.5 rounded-xl shadow-2xl shadow-black/60 flex items-center gap-3 pointer-events-none">
         <i id="toast-icon" class="fa-solid fa-circle-info text-blue-400"></i>
         <span id="toast-message" class="text-sm font-medium">Notifikasi</span>
     </div>
 
-    <!-- SKRIN KUNCI / LOG MASUK KATA LALUAN (SHA-256) -->
-    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 sm:p-7 space-y-5 animate-fade-in">
+    <!-- SKRIN KUNCI / LOG MASUK KATA LALUAN (SHA-256) - TEMA BIRU GELAP -->
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
+        <div class="bg-slate-900/90 rounded-2xl shadow-2xl border border-blue-900/40 max-w-sm w-full p-6 sm:p-7 space-y-5 animate-fade-in text-slate-100 shadow-blue-950/50">
             <div class="text-center space-y-2">
-                <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-inner shadow-blue-500/10">
+                <div class="w-14 h-14 bg-blue-950/70 text-blue-400 border border-blue-800/40 rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-lg shadow-blue-950/60">
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <h2 class="text-base font-bold text-slate-900">Akses Keselamatan Sistem</h2>
-                <p class="text-xs text-slate-500">Sila masukkan kata laluan untuk mengakses Pengesanan Status Kerja Jabatan.</p>
+                <h2 class="text-base font-bold text-white tracking-wide">Akses Keselamatan Sistem</h2>
+                <p class="text-xs text-slate-400 leading-relaxed">Sila masukkan kata laluan untuk mengakses Pengesanan Status Kerja Jabatan.</p>
             </div>
 
             <form id="password-form" onsubmit="handlePasswordSubmit(event)" class="space-y-4">
                 <div>
-                    <label for="system-password" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                    <label for="system-password" class="block text-xs font-semibold text-slate-300 mb-1.5">
                         Kata Laluan Akses:
                     </label>
                     <div class="relative">
                         <input type="password" id="system-password" required placeholder="Masukkan kata laluan..."
-                            class="w-full text-sm pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition">
-                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none text-sm">
+                            class="w-full text-sm pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-700/80 bg-slate-950/80 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 transition">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-400 focus:outline-none text-sm transition">
                             <i id="pwd-eye-icon" class="fa-regular fa-eye"></i>
                         </button>
                     </div>
-                    <p id="password-error" class="hidden text-[11px] text-rose-600 font-semibold mt-1.5 flex items-center gap-1">
+                    <p id="password-error" class="hidden text-[11px] text-rose-400 font-semibold mt-1.5 flex items-center gap-1.5">
                         <i class="fa-solid fa-circle-exclamation"></i>
                         <span>Kata laluan tidak sah! Sila cuba lagi.</span>
                     </p>
                 </div>
 
                 <button type="submit" id="btn-submit-pwd"
-                    class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-2.5 rounded-xl shadow-md shadow-blue-600/20 text-xs transition flex items-center justify-center gap-2">
+                    class="w-full bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-semibold py-2.5 rounded-xl shadow-lg shadow-blue-600/30 text-xs transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-lock-open text-xs"></i>
                     <span>Sahkan &amp; Akses Sistem</span>
                 </button>
             </form>
 
-            <div class="text-center pt-1 border-t border-slate-100">
-                <p class="text-[10px] text-slate-400 flex items-center justify-center gap-1">
-                    <i class="fa-solid fa-shield-check text-emerald-500"></i>
+            <div class="text-center pt-2 border-t border-slate-800">
+                <p class="text-[10px] text-slate-400 flex items-center justify-center gap-1.5 font-medium">
+                    <i class="fa-solid fa-shield-check text-emerald-400"></i>
                     Disulitkan dengan SHA-256 (Kerahsiaan Tinggi)
                 </p>
             </div>
@@ -75,29 +80,29 @@
     </div>
 
     <!-- MAIN APP WRAPPER -->
-    <div id="main-app" class="hidden min-h-screen flex flex-col">
+    <div id="main-app" class="hidden min-h-screen flex flex-col bg-slate-950">
         <!-- HEADER UTAMA -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <header class="bg-slate-900/90 border-b border-slate-800/80 sticky top-0 z-30 backdrop-blur-md">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-600/20 text-lg">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-lg shadow-blue-600/25 text-lg">
                         <i class="fa-solid fa-list-check"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-lg text-slate-900 leading-tight">Pengesanan Status Kerja Jabatan</h1>
-                        <p class="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            Sistem Pengurusan Tugasan &amp; Penyegerakan Awan
+                        <h1 class="font-bold text-lg text-white leading-tight">Pelaksanaan Tugas dan Prestasi Kerja Pusat Islam</h1>
+                        <p class="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400 animate-pulse"></span>
+                            Sistem Pengurusan Tugasan
                         </p>
                     </div>
                 </div>
                 <!-- Status Sambungan, Tarikh Semasa & Butang Log Keluar -->
-                <div class="flex items-center gap-3 text-xs text-slate-500 font-medium">
-                    <div class="hidden sm:flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
-                        <i class="fa-regular fa-calendar text-blue-600"></i>
+                <div class="flex items-center gap-3 text-xs text-slate-300 font-medium">
+                    <div class="hidden sm:flex items-center gap-1.5 bg-slate-950/70 border border-slate-800 px-3 py-1.5 rounded-lg text-slate-300">
+                        <i class="fa-regular fa-calendar text-blue-400"></i>
                         <span id="current-date-badge">Memuatkan tarikh...</span>
                     </div>
-                    <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-semibold transition flex items-center gap-1.5 text-xs active:scale-95" title="Kunci semula sistem">
+                    <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg bg-rose-950/40 border border-rose-800/50 text-rose-300 hover:bg-rose-900/50 font-semibold transition flex items-center gap-1.5 text-xs active:scale-95" title="Kunci semula sistem">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
                         <span>Kunci / Keluar</span>
                     </button>
@@ -109,27 +114,27 @@
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6 flex-grow">
 
             <!-- BAR PENETAPAN GOOGLE SHEET CLOUD -->
-            <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm">
+            <div class="bg-slate-900 border border-slate-800/80 p-4 rounded-2xl shadow-xl shadow-slate-950/60">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                        <div class="w-10 h-10 rounded-xl bg-blue-950/80 border border-blue-800/40 text-blue-400 flex items-center justify-center shrink-0">
                             <i class="fa-solid fa-cloud text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                Penyegerakan Google Sheets (Dua Hala)
-                                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-full">Aktif</span>
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                Sambungan ke Simpanan Secara Cloud
+                                <span class="bg-emerald-950/60 border border-emerald-800/50 text-emerald-300 text-[10px] font-semibold px-2 py-0.5 rounded-full">Aktif</span>
                             </h3>
-                            <p class="text-xs text-slate-500">Menyokong pelayar tempatan (file:///) &amp; hos awan dengan sandaran JSONP automatik.</p>
+                            <p class="text-xs text-slate-400">Maklumat dibawah seliaan En. W. Noraizuddin</p>
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <button onclick="fetchSheetData()" id="btn-sync-live" class="text-xs px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm shadow-indigo-600/20 transition flex items-center justify-center gap-2 whitespace-nowrap active:scale-95">
+                        <button onclick="fetchSheetData()" id="btn-sync-live" class="text-xs px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2 whitespace-nowrap active:scale-95">
                             <i class="fa-solid fa-rotate" id="sync-icon"></i>
-                            <span id="sync-text">Sync Live Google Sheet</span>
+                            <span id="sync-text">Sync Live</span>
                         </button>
-                        <button onclick="exportToCSV()" class="text-xs px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Muat Turun Rekod dalam bentuk CSV">
-                            <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                        <button onclick="exportToCSV()" class="text-xs px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-200 font-medium rounded-xl transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Muat Turun Rekod dalam bentuk CSV">
+                            <i class="fa-solid fa-file-excel text-emerald-400"></i>
                             <span>Eksport CSV</span>
                         </button>
                     </div>
@@ -143,17 +148,17 @@
                 <div class="lg:col-span-5 space-y-6">
                     
                     <!-- 1. FILTER UNIT (AUTO-LOAD) -->
-                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                                <i class="fa-solid fa-building-user text-blue-600"></i> Pilihan Unit Jabatan
+                    <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-xl shadow-slate-950/50 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                <i class="fa-solid fa-building-user text-blue-400"></i> Pilihan Unit Jabatan
                             </span>
-                            <span id="unit-source-badge" class="text-[11px] bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full font-medium border border-blue-100">Langkah 1 (Pratetap)</span>
+                            <span id="unit-source-badge" class="text-[11px] bg-blue-950/70 text-blue-300 px-2.5 py-0.5 rounded-full font-medium border border-blue-800/40">Langkah 1 (Pratetap)</span>
                         </div>
 
                         <div>
-                            <label for="unit-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Pilih Unit Kerja:</label>
-                            <select id="unit-select" onchange="handleLoadUnitData(true)" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                            <label for="unit-select" class="block text-xs font-semibold text-slate-300 mb-1.5">Pilih Unit/ Seksyen:</label>
+                            <select id="unit-select" onchange="handleLoadUnitData(true)" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-700/80 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 transition cursor-pointer">
                                 <option value="" disabled selected>-- Sila Pilih Unit --</option>
                                 <option value="Unit Pentadbiran & Sumber Manusia">Unit Pentadbiran &amp; Sumber Manusia</option>
                                 <option value="Unit Kewangan & Akaun">Unit Kewangan &amp; Akaun</option>
@@ -166,23 +171,23 @@
                     </div>
 
                     <!-- 2. BORANG PENGISIAN RUANG -->
-                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-5">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                                <i class="fa-solid fa-pen-to-square text-blue-600"></i> Pengisian Maklumat Kerja
+                    <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-xl shadow-slate-950/50 space-y-5">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square text-blue-400"></i> Pengisian Maklumat Kerja
                             </span>
-                            <span class="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-medium">Langkah 2</span>
+                            <span class="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-medium">Langkah 2</span>
                         </div>
 
                         <form id="work-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
                             <!-- Skop Kerja -->
                             <div>
-                                <label for="skop-select" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    <i class="fa-solid fa-layer-group text-slate-400 mr-1"></i> Skop Kerja
+                                <label for="skop-select" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    <i class="fa-solid fa-layer-group text-slate-500 mr-1"></i> Skop Kerja
                                 </label>
                                 <div class="relative">
                                     <select id="skop-select" required onchange="handleSkopChange()"
-                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-700/80 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 transition cursor-pointer">
                                         <option value="" disabled selected>-- Sila Pilih Unit Dahulu --</option>
                                     </select>
                                 </div>
@@ -190,12 +195,12 @@
 
                             <!-- Nama Kerja (Filter berasaskan Skop) -->
                             <div>
-                                <label for="kerja-select" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                    <i class="fa-solid fa-briefcase text-slate-400 mr-1"></i> Nama / Deskripsi Kerja
+                                <label for="kerja-select" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    <i class="fa-solid fa-briefcase text-slate-500 mr-1"></i> Nama / Deskripsi Kerja
                                 </label>
                                 <div class="relative">
                                     <select id="kerja-select" required onchange="handleKerjaChange()"
-                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-700/80 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 transition cursor-pointer">
                                         <option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>
                                     </select>
                                 </div>
@@ -204,76 +209,76 @@
                             <!-- Pilihan Tarikh: Tarikh Mula & Tarikh Tamat -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label for="date-start" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                        <i class="fa-regular fa-calendar-plus text-slate-400 mr-1"></i> Tarikh Mula
+                                    <label for="date-start" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        <i class="fa-regular fa-calendar-plus text-slate-500 mr-1"></i> Tarikh Mula
                                     </label>
                                     <input type="date" id="date-start" required onchange="calculateDueDate()"
-                                        class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        class="w-full text-sm px-3 py-2 rounded-xl border border-slate-700/80 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70">
                                 </div>
                                 <div>
-                                    <label for="date-end" class="block text-xs font-semibold text-slate-700 mb-1.5">
-                                        <i class="fa-regular fa-calendar-check text-slate-400 mr-1"></i> Tarikh Tamat
+                                    <label for="date-end" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        <i class="fa-regular fa-calendar-check text-slate-500 mr-1"></i> Tarikh Tamat
                                     </label>
                                     <input type="date" id="date-end" required onchange="calculateDueDate()"
-                                        class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        class="w-full text-sm px-3 py-2 rounded-xl border border-slate-700/80 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70">
                                 </div>
                             </div>
 
                             <!-- Tempoh Due Date Display -->
-                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
-                                <span class="text-slate-600 font-medium">Baki / Tempoh Masa:</span>
-                                <span id="due-date-badge" class="font-bold text-slate-800">Sila pilih tarikh</span>
+                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+                                <span class="text-slate-400 font-medium">Baki / Tempoh Masa:</span>
+                                <span id="due-date-badge" class="font-bold text-slate-200">Sila pilih tarikh</span>
                             </div>
 
                             <!-- PEMILIHAN / INDIKATOR JENIS KEMAJUAN (MESYUARAT VS STANDARD) -->
-                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
-                                <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-sliders text-indigo-500"></i> Kaedah Pengiraan Kemajuan:
+                            <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+                                <span class="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-sliders text-blue-400"></i> Kaedah Pengiraan Kemajuan:
                                 </span>
                                 <button type="button" id="btn-toggle-meeting-mode" onclick="toggleProgressModeManual()" 
-                                    class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition flex items-center gap-1">
-                                    <i class="fa-solid fa-arrows-rotate text-blue-500"></i>
+                                    class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 transition flex items-center gap-1">
+                                    <i class="fa-solid fa-arrows-rotate text-blue-400"></i>
                                     <span id="mode-toggle-label">Standard (3 Fasa)</span>
                                 </button>
                             </div>
 
                             <!-- 1. KOMPONEN KEMAJUAN KHAS: BILANGAN MESYUARAT (MAKSIMUM 7 KALI = 100%) -->
-                            <div id="section-progress-meeting" class="space-y-3 p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-xl hidden transition-all">
+                            <div id="section-progress-meeting" class="space-y-3 p-3.5 bg-blue-950/40 border border-blue-900/60 rounded-xl hidden transition-all">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <div class="flex items-center gap-1.5">
-                                            <span class="w-2 h-2 rounded-full bg-indigo-600 animate-ping"></span>
-                                            <label class="text-xs font-bold text-indigo-900">Kemajuan Mesyuarat (Sasaran 7 Kali):</label>
+                                            <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+                                            <label class="text-xs font-bold text-blue-200">Kemajuan Mesyuarat (Sasaran 7 Kali):</label>
                                         </div>
-                                        <p class="text-[11px] text-indigo-700 mt-0.5">Setiap 1 sesi mesyuarat = ~14.3% (7 kali = 100%)</p>
+                                        <p class="text-[11px] text-blue-300/80 mt-0.5">Setiap 1 sesi mesyuarat = ~14.3% (7 kali = 100%)</p>
                                     </div>
-                                    <span id="meeting-percentage-display" class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-600 text-white shadow-xs">
+                                    <span id="meeting-percentage-display" class="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white shadow-xs">
                                         0 / 7 (0%)
                                     </span>
                                 </div>
 
                                 <!-- Bar visual progress mesyuarat -->
-                                <div class="w-full bg-white/80 rounded-full h-2 border border-indigo-200 overflow-hidden">
-                                    <div id="meeting-progress-bar" class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                                <div class="w-full bg-slate-950 rounded-full h-2 border border-blue-900/50 overflow-hidden">
+                                    <div id="meeting-progress-bar" class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
                                 </div>
 
                                 <!-- 7 Kotak Semak Sesi Mesyuarat -->
                                 <div class="grid grid-cols-7 gap-1.5 pt-1">
-                                    <button type="button" onclick="setMeetingCount(1)" id="btn-meet-1" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">1</button>
-                                    <button type="button" onclick="setMeetingCount(2)" id="btn-meet-2" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">2</button>
-                                    <button type="button" onclick="setMeetingCount(3)" id="btn-meet-3" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">3</button>
-                                    <button type="button" onclick="setMeetingCount(4)" id="btn-meet-4" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">4</button>
-                                    <button type="button" onclick="setMeetingCount(5)" id="btn-meet-5" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">5</button>
-                                    <button type="button" onclick="setMeetingCount(6)" id="btn-meet-6" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">6</button>
-                                    <button type="button" onclick="setMeetingCount(7)" id="btn-meet-7" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">7</button>
+                                    <button type="button" onclick="setMeetingCount(1)" id="btn-meet-1" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">1</button>
+                                    <button type="button" onclick="setMeetingCount(2)" id="btn-meet-2" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">2</button>
+                                    <button type="button" onclick="setMeetingCount(3)" id="btn-meet-3" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">3</button>
+                                    <button type="button" onclick="setMeetingCount(4)" id="btn-meet-4" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">4</button>
+                                    <button type="button" onclick="setMeetingCount(5)" id="btn-meet-5" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">5</button>
+                                    <button type="button" onclick="setMeetingCount(6)" id="btn-meet-6" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">6</button>
+                                    <button type="button" onclick="setMeetingCount(7)" id="btn-meet-7" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">7</button>
                                 </div>
 
                                 <!-- Kawalan Cepat + / - & Info Status Semasa -->
                                 <div class="flex items-center justify-between text-xs pt-1">
-                                    <span class="text-indigo-800 font-medium" id="meeting-count-desc">Belum ada mesyuarat dijalankan.</span>
+                                    <span class="text-blue-300 font-medium" id="meeting-count-desc">Belum ada mesyuarat dijalankan.</span>
                                     <div class="flex items-center gap-1.5">
-                                        <button type="button" onclick="adjustMeetingCount(-1)" class="w-7 h-7 rounded-lg bg-white border border-indigo-200 hover:bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center transition active:scale-95" title="Kurang 1 Mesyuarat">-</button>
-                                        <button type="button" onclick="adjustMeetingCount(1)" class="w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center justify-center transition active:scale-95 shadow-xs" title="Tambah 1 Mesyuarat">+</button>
+                                        <button type="button" onclick="adjustMeetingCount(-1)" class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-200 font-bold flex items-center justify-center transition active:scale-95" title="Kurang 1 Mesyuarat">-</button>
+                                        <button type="button" onclick="adjustMeetingCount(1)" class="w-7 h-7 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center justify-center transition active:scale-95 shadow-sm" title="Tambah 1 Mesyuarat">+</button>
                                     </div>
                                 </div>
                             </div>
@@ -281,38 +286,38 @@
                             <!-- 2. MULTIPLE TICK PERATUSAN STANDARD (40% + 20% + 40%) -->
                             <div id="section-progress-standard" class="space-y-2">
                                 <div class="flex items-center justify-between">
-                                    <label class="text-xs font-semibold text-slate-700">Komponen Kemajuan (Multiple Tick):</label>
-                                    <span id="percentage-display" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-800">0%</span>
+                                    <label class="text-xs font-semibold text-slate-300">Komponen Kemajuan (Multiple Tick):</label>
+                                    <span id="percentage-display" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0%</span>
                                 </div>
 
                                 <div class="space-y-2">
                                     <!-- Tick 1: 40% -->
-                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition select-none">
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-800 hover:bg-slate-800/60 bg-slate-950/60 cursor-pointer transition select-none">
                                         <input type="checkbox" id="tick-paperwork" value="40" onchange="calculatePercentage()"
-                                            class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                                            class="w-4 h-4 text-blue-600 bg-slate-900 rounded border-slate-700 focus:ring-blue-500">
                                         <div class="ml-3 flex-grow flex justify-between items-center text-xs">
-                                            <span class="font-medium text-slate-700">Kertas Kerja / Mesyuarat / Usul</span>
-                                            <span class="bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-md">40%</span>
+                                            <span class="font-medium text-slate-200">Kertas Kerja / Mesyuarat / Usul</span>
+                                            <span class="bg-blue-950 text-blue-300 border border-blue-800/40 font-semibold px-2 py-0.5 rounded-md">40%</span>
                                         </div>
                                     </label>
 
                                     <!-- Tick 2: 20% -->
-                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition select-none">
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-800 hover:bg-slate-800/60 bg-slate-950/60 cursor-pointer transition select-none">
                                         <input type="checkbox" id="tick-broadcast" value="20" onchange="calculatePercentage()"
-                                            class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                                            class="w-4 h-4 text-blue-600 bg-slate-900 rounded border-slate-700 focus:ring-blue-500">
                                         <div class="ml-3 flex-grow flex justify-between items-center text-xs">
-                                            <span class="font-medium text-slate-700">Hebahan / Publisiti</span>
-                                            <span class="bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-md">20%</span>
+                                            <span class="font-medium text-slate-200">Hebahan / Publisiti</span>
+                                            <span class="bg-amber-950/60 text-amber-300 border border-amber-800/40 font-semibold px-2 py-0.5 rounded-md">20%</span>
                                         </div>
                                     </label>
 
                                     <!-- Tick 3: 40% -->
-                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition select-none">
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-800 hover:bg-slate-800/60 bg-slate-950/60 cursor-pointer transition select-none">
                                         <input type="checkbox" id="tick-execution" value="40" onchange="calculatePercentage()"
-                                            class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                                            class="w-4 h-4 text-blue-600 bg-slate-900 rounded border-slate-700 focus:ring-blue-500">
                                         <div class="ml-3 flex-grow flex justify-between items-center text-xs">
-                                            <span class="font-medium text-slate-700">Pelaksanaan Program / Tugasan</span>
-                                            <span class="bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-md">40%</span>
+                                            <span class="font-medium text-slate-200">Pelaksanaan Program / Tugasan</span>
+                                            <span class="bg-emerald-950/60 text-emerald-300 border border-emerald-800/40 font-semibold px-2 py-0.5 rounded-md">40%</span>
                                         </div>
                                     </label>
                                 </div>
@@ -320,20 +325,20 @@
 
                             <!-- RUANG STATUS (AUTO GENERATED) -->
                             <div class="pt-2">
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Status Tugasan (Automatik)</label>
-                                <div id="status-container" class="flex items-center gap-2 p-3 bg-slate-100 border border-slate-200 rounded-xl transition">
-                                    <span id="status-icon" class="w-3 h-3 rounded-full bg-slate-400"></span>
-                                    <span id="status-text" class="text-xs font-bold text-slate-600">Belum Mula (0%)</span>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Status Tugasan (Automatik)</label>
+                                <div id="status-container" class="flex items-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl transition">
+                                    <span id="status-icon" class="w-3 h-3 rounded-full bg-slate-600"></span>
+                                    <span id="status-text" class="text-xs font-bold text-slate-400">Belum Mula (0%)</span>
                                 </div>
                             </div>
 
                             <!-- BUTANG SIMPAN & SET SEMULA -->
                             <div class="pt-2 flex flex-col gap-2">
-                                <button type="submit" id="btn-save" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2 active:scale-[0.99]">
+                                <button type="submit" id="btn-save" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-emerald-600/25 transition flex items-center justify-center gap-2 active:scale-[0.99]">
                                     <i class="fa-solid fa-cloud-arrow-up"></i>
                                     <span id="btn-save-text">Simpan &amp; Hantar ke Cloud Google Sheet</span>
                                 </button>
-                                <button type="button" onclick="resetWorkForm()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium py-2 rounded-xl transition">
+                                <button type="button" onclick="resetWorkForm()" class="w-full bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-300 text-xs font-medium py-2 rounded-xl transition">
                                     <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Kosongkan Isian Borang
                                 </button>
                             </div>
@@ -344,18 +349,18 @@
 
                 <!-- BAHAGIAN KANAN: PAPARAN REKOD (7 COLS) -->
                 <div class="lg:col-span-7 space-y-4">
-                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-xl shadow-slate-950/50">
                         <!-- HEADER JADUAL -->
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
                             <div>
-                                <h2 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+                                <h2 class="font-bold text-white text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-clock-rotate-left text-blue-400"></i>
                                     Rekod Kerja Yang Diisi
                                 </h2>
                                 <p class="text-xs text-slate-400">Paparan auto-filter mengikut Unit dan Skop Kerja yang dipilih.</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span id="record-count-badge" class="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium">
+                                <span id="record-count-badge" class="text-xs bg-slate-950 text-slate-300 border border-slate-800 px-3 py-1 rounded-full font-medium">
                                     0 Rekod
                                 </span>
                             </div>
@@ -365,18 +370,18 @@
                         <div class="mt-4 space-y-2">
                             <!-- Input Carian Cepat -->
                             <div class="relative">
-                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-500 text-xs"></i>
                                 <input type="text" id="table-search-input" onkeyup="handleSearch()" placeholder="Cari nama kerja, unit atau skop..."
-                                    class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50">
+                                    class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 bg-slate-950 text-slate-100 placeholder-slate-500">
                             </div>
 
-                            <div id="filter-status-bar" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
-                                <div class="flex items-center gap-2 text-slate-600 truncate mr-2">
-                                    <i class="fa-solid fa-filter text-blue-500 text-xs"></i>
-                                    <span class="font-medium text-slate-500">Tapisan Semasa:</span>
-                                    <span id="filter-active-label" class="font-semibold text-slate-800 truncate">Semua Rekod (Tiada Tapisan)</span>
+                            <div id="filter-status-bar" class="p-2.5 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-2 text-slate-400 truncate mr-2">
+                                    <i class="fa-solid fa-filter text-blue-400 text-xs"></i>
+                                    <span class="font-medium text-slate-400">Tapisan Semasa:</span>
+                                    <span id="filter-active-label" class="font-semibold text-slate-200 truncate">Semua Rekod (Tiada Tapisan)</span>
                                 </div>
-                                <button id="btn-reset-table-filter" onclick="resetTableFilter()" class="hidden text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 whitespace-nowrap">
+                                <button id="btn-reset-table-filter" onclick="resetTableFilter()" class="hidden text-[11px] font-semibold text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 whitespace-nowrap">
                                     <i class="fa-solid fa-rotate-left"></i> Papar Semua
                                 </button>
                             </div>
@@ -386,18 +391,18 @@
                         <div class="overflow-x-auto mt-4">
                             <table class="w-full text-left text-xs table-fixed min-w-[540px]">
                                 <thead>
-                                    <tr class="text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/70">
+                                    <tr class="text-slate-400 uppercase tracking-wider border-b border-slate-800 bg-slate-950/70">
                                         <th class="py-2.5 px-3 font-semibold w-[44%]">Kerja &amp; Unit</th>
                                         <th class="py-2.5 px-2 font-semibold w-[22%]">Tarikh</th>
                                         <th class="py-2.5 px-2 font-semibold w-[12%] text-center">Tempoh</th>
-                                        <th class="py-2.5 px-1 font-semibold w-[10%] text-center">Kemajuan</th>
+                                        <th class="py-2.5 px-1 font-semibold w-[10%] text-center">Prestasi</th>
                                         <th class="py-2.5 px-2 font-semibold w-[12%] text-right">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody id="session-records-body" class="divide-y divide-slate-100 text-slate-700">
+                                <tbody id="session-records-body" class="divide-y divide-slate-800 text-slate-300">
                                     <tr id="empty-row">
-                                        <td colspan="5" class="text-center py-12 text-slate-400">
-                                            <i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>
+                                        <td colspan="5" class="text-center py-12 text-slate-500">
+                                            <i class="fa-regular fa-folder-open text-3xl mb-2 block text-slate-600"></i>
                                             Belum ada rekod kerja yang diisi pada sesi ini. Sila lengkapkan borang di sebelah kiri.
                                         </td>
                                     </tr>
@@ -412,7 +417,7 @@
         </main>
 
         <!-- FOOTER -->
-        <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-6">
+        <footer class="bg-slate-900 border-t border-slate-800/80 py-4 text-center text-xs text-slate-400 mt-6">
             Sistem Pengesanan Status Kerja Jabatan &bull; Sambungan Cloud Google Sheets Terkawal
         </footer>
     </div>
@@ -886,25 +891,25 @@
                 display.className = currentMeetingCount === 7 
                     ? "text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-600 text-white shadow-xs"
                     : (currentMeetingCount > 0 
-                        ? "text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-600 text-white shadow-xs" 
-                        : "text-xs font-bold px-2.5 py-1 rounded-full bg-slate-400 text-white shadow-xs");
+                        ? "text-xs font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white shadow-xs" 
+                        : "text-xs font-bold px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 shadow-xs");
             }
 
             if (bar) {
                 bar.style.width = `${percent}%`;
                 bar.className = currentMeetingCount === 7 
-                    ? "bg-emerald-500 h-full rounded-full transition-all duration-300"
-                    : "bg-indigo-600 h-full rounded-full transition-all duration-300";
+                    ? "bg-emerald-400 h-full rounded-full transition-all duration-300"
+                    : "bg-blue-500 h-full rounded-full transition-all duration-300";
             }
 
-            // Kemas kini gaya 7 butang langkah
+            // Kemas kini gaya 7 butang langkah bagi tema biru gelap
             for (let i = 1; i <= 7; i++) {
                 const btn = document.getElementById(`btn-meet-${i}`);
                 if (!btn) continue;
                 if (i <= currentMeetingCount) {
-                    btn.className = "meet-step-btn py-2 text-center rounded-lg border border-indigo-600 bg-indigo-600 text-white text-xs font-bold shadow-xs transition";
+                    btn.className = "meet-step-btn py-2 text-center rounded-lg border border-blue-500 bg-blue-600 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition";
                 } else {
-                    btn.className = "meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-slate-700 text-xs font-bold transition";
+                    btn.className = "meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-slate-800 text-slate-300 text-xs font-bold transition";
                 }
             }
 
@@ -912,7 +917,7 @@
                 if (currentMeetingCount === 0) {
                     desc.innerText = "Belum ada mesyuarat dijalankan.";
                 } else if (currentMeetingCount === 7) {
-                    desc.innerHTML = `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Sasaran 7 kali mesyuarat selesai!</span>`;
+                    desc.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Sasaran 7 kali mesyuarat selesai!</span>`;
                 } else {
                     const baki = 7 - currentMeetingCount;
                     desc.innerHTML = `Telah dijalankan <b>${currentMeetingCount} kali</b> (Baki: ${baki} sesi lagi).`;
@@ -1035,7 +1040,7 @@
 
             if (!startVal || !endVal) {
                 badge.innerText = "Sila pilih tarikh";
-                badge.className = "font-bold text-slate-800";
+                badge.className = "font-bold text-slate-400";
                 return;
             }
 
@@ -1047,13 +1052,13 @@
 
             if (diffDays < 0) {
                 badge.innerText = "Ralat: Tarikh tamat sebelum tarikh mula";
-                badge.className = "font-bold text-rose-600";
+                badge.className = "font-bold text-rose-400";
             } else if (diffDays === 0) {
                 badge.innerText = "Hari yang sama (1 Hari)";
-                badge.className = "font-bold text-amber-600";
+                badge.className = "font-bold text-amber-400";
             } else {
                 badge.innerText = `${diffDays} Hari Tempoh Masa`;
-                badge.className = "font-bold text-blue-600";
+                badge.className = "font-bold text-blue-400";
             }
         }
 
@@ -1074,11 +1079,11 @@
             if (percentDisplay) {
                 percentDisplay.innerText = `${total}%`;
                 if (total === 100) {
-                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/50";
                 } else if (total > 0) {
-                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800";
+                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-800/50";
                 } else {
-                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-800";
+                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700";
                 }
             }
 
@@ -1086,28 +1091,28 @@
             return total;
         }
 
-        // Kemas kini Paparan Status Automatik
+        // Kemas kini Paparan Status Automatik Tema Biru Gelap
         function updateStatusDisplay(percentage) {
             const statusContainer = document.getElementById('status-container');
             const statusText = document.getElementById('status-text');
             const statusIcon = document.getElementById('status-icon');
 
             let statusName = "Belum Mula";
-            let colorClass = "bg-slate-100 border-slate-300 text-slate-600";
-            let iconClass = "bg-slate-400";
+            let colorClass = "bg-slate-950 border-slate-800 text-slate-400";
+            let iconClass = "bg-slate-600";
 
             if (percentage === 0) {
                 statusName = "Belum Mula";
-                colorClass = "bg-slate-100 border-slate-300 text-slate-600";
-                iconClass = "bg-slate-400";
+                colorClass = "bg-slate-950 border-slate-800 text-slate-400";
+                iconClass = "bg-slate-600";
             } else if (percentage >= 1 && percentage < 100) {
                 statusName = "Dalam Tindakan";
-                colorClass = "bg-amber-50 border-amber-200 text-amber-700";
-                iconClass = "bg-amber-500 animate-pulse";
+                colorClass = "bg-amber-950/40 border-amber-900/60 text-amber-300";
+                iconClass = "bg-amber-400 animate-pulse";
             } else if (percentage === 100) {
                 statusName = "Selesai";
-                colorClass = "bg-emerald-50 border-emerald-200 text-emerald-700";
-                iconClass = "bg-emerald-500";
+                colorClass = "bg-emerald-950/40 border-emerald-900/60 text-emerald-300";
+                iconClass = "bg-emerald-400";
             }
 
             statusContainer.className = `flex items-center gap-2 p-3 border rounded-xl ${colorClass}`;
@@ -1215,7 +1220,7 @@
             const dueDateBadge = document.getElementById('due-date-badge');
             if (dueDateBadge) {
                 dueDateBadge.innerText = "Sila pilih tarikh";
-                dueDateBadge.className = "font-bold text-slate-800";
+                dueDateBadge.className = "font-bold text-slate-400";
             }
 
             document.getElementById('tick-paperwork').checked = false;
@@ -1334,8 +1339,8 @@
 
                 tbody.innerHTML = `
                     <tr id="empty-row">
-                        <td colspan="5" class="text-center py-12 text-slate-400">
-                            <i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>
+                        <td colspan="5" class="text-center py-12 text-slate-500">
+                            <i class="fa-regular fa-folder-open text-3xl mb-2 block text-slate-600"></i>
                             ${emptyMsg}
                         </td>
                     </tr>
@@ -1347,11 +1352,11 @@
             filteredRecords.forEach(item => {
                 let statusBadge = "";
                 if (item.status === "Selesai") {
-                    statusBadge = '<span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Selesai</span>';
+                    statusBadge = '<span class="inline-block bg-emerald-950/70 border border-emerald-800/50 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Selesai</span>';
                 } else if (item.status === "Dalam Tindakan") {
-                    statusBadge = '<span class="inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Tindakan</span>';
+                    statusBadge = '<span class="inline-block bg-amber-950/70 border border-amber-800/50 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Tindakan</span>';
                 } else {
-                    statusBadge = '<span class="inline-block bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Belum Mula</span>';
+                    statusBadge = '<span class="inline-block bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Belum Mula</span>';
                 }
 
                 const fixedPercentage = formatPercentageFixed(item.peratus);
@@ -1359,37 +1364,37 @@
                 // Label tambahan jika tugasan berasaskan mesyuarat
                 const isMeetingItem = item.isMeeting || checkIsMeetingText(item.kerja) || checkIsMeetingText(item.skop);
                 const meetingBadge = isMeetingItem ? `
-                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800/50">
                         <i class="fa-solid fa-users-rectangle text-[9px]"></i> ${item.meetingCount !== null && item.meetingCount !== undefined ? item.meetingCount : Math.round((parseInt(fixedPercentage)/100)*7)}/7 Mesyuarat
                     </span>` : '';
 
                 html += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 align-top">
+                    <tr class="hover:bg-slate-800/40 transition border-b border-slate-800 align-top">
                         <!-- Ruang Kerja & Unit -->
                         <td class="py-2.5 px-3 break-words">
-                            <div class="font-semibold text-slate-900 leading-snug flex flex-wrap items-center gap-1.5">
+                            <div class="font-semibold text-slate-100 leading-snug flex flex-wrap items-center gap-1.5">
                                 <span>${escapeHtml(item.kerja)}</span>
                                 ${meetingBadge}
                             </div>
-                            <div class="text-[11px] text-slate-500 mt-0.5 leading-tight">${escapeHtml(item.unit)} &bull; <span class="text-slate-400">${escapeHtml(item.skop)}</span></div>
+                            <div class="text-[11px] text-slate-400 mt-0.5 leading-tight">${escapeHtml(item.unit)} &bull; <span class="text-slate-500">${escapeHtml(item.skop)}</span></div>
                         </td>
                         <!-- Tarikh Mula & Tamat -->
-                        <td class="py-2.5 px-2 text-[11px] text-slate-600">
+                        <td class="py-2.5 px-2 text-[11px] text-slate-300">
                             <div class="flex items-center gap-1 font-mono text-[10.5px]">
-                                <span class="text-slate-400 text-[9px] uppercase font-sans">M:</span> ${item.tarikhMula}
+                                <span class="text-slate-500 text-[9px] uppercase font-sans">M:</span> ${item.tarikhMula}
                             </div>
                             <div class="flex items-center gap-1 font-mono text-[10.5px] mt-0.5">
-                                <span class="text-slate-400 text-[9px] uppercase font-sans">T:</span> ${item.tarikhAkhir}
+                                <span class="text-slate-500 text-[9px] uppercase font-sans">T:</span> ${item.tarikhAkhir}
                             </div>
                         </td>
                         <!-- Tempoh Masa -->
-                        <td class="py-2.5 px-2 text-center text-slate-600">
-                            <span class="inline-block font-semibold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10.5px] leading-tight">
+                        <td class="py-2.5 px-2 text-center text-slate-300">
+                            <span class="inline-block font-semibold bg-slate-800/80 border border-slate-700/60 text-slate-300 px-1.5 py-0.5 rounded text-[10.5px] leading-tight">
                                 ${escapeHtml(item.tempohDue)}
                             </span>
                         </td>
                         <!-- Peratusan -->
-                        <td class="py-2.5 px-1 text-center font-bold text-slate-800 text-xs font-mono">
+                        <td class="py-2.5 px-1 text-center font-bold text-slate-100 text-xs font-mono">
                             ${fixedPercentage}
                         </td>
                         <!-- Status -->
@@ -1481,10 +1486,10 @@
             const syncText = document.getElementById('sync-text');
 
             if (syncIcon) syncIcon.classList.add('fa-spin');
-            if (syncText) syncText.textContent = "Menyegerak...";
+            if (syncText) syncText.textContent = "Refreshing...";
             if (btnSync) btnSync.disabled = true;
 
-            showToast("Menyegerakkan data terkini daripada Google Sheet...", "info");
+            showToast("Refresh data terkini daripada Cloud...", "info");
 
             try {
                 const cacheBuster = `t=${Date.now()}`;
@@ -1511,7 +1516,7 @@
                 }
             } finally {
                 if (syncIcon) syncIcon.classList.remove('fa-spin');
-                if (syncText) syncText.textContent = "Sync Live Google Sheet";
+                if (syncText) syncText.textContent = "Sync Live";
                 if (btnSync) btnSync.disabled = false;
             }
         }
@@ -1606,7 +1611,7 @@
                 const sheetUnits = Object.keys(cloudUnitMapping);
                 if (sheetUnits.length > 0) {
                     const unitSelect = document.getElementById('unit-select');
-                    unitSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit (${sheetUnits.length} Unit Google Sheet) --</option>`;
+                    unitSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit (${sheetUnits.length} Pilihan) --</option>`;
                     sheetUnits.forEach(unitName => {
                         const opt = document.createElement('option');
                         opt.value = unitName;
@@ -1616,8 +1621,8 @@
 
                     const badge = document.getElementById('unit-source-badge');
                     if (badge) {
-                        badge.textContent = `Langkah 1 (${sheetUnits.length} Unit dari Google Sheet)`;
-                        badge.className = "text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium border border-emerald-200";
+                        badge.textContent = `Langkah 1 (${sheetUnits.length} Pilihan)`;
+                        badge.className = "text-[11px] bg-emerald-950/70 text-emerald-300 px-2 py-0.5 rounded-full font-medium border border-emerald-800/50";
                     }
                 }
 
