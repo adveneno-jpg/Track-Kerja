@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pengesanan Status Kerja Jabatan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 antialiased flex flex-col justify-between">
+
+    <!-- NOTIFIKASI TOAST -->
+    <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-150%] opacity-0 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 pointer-events-none">
+        <i id="toast-icon" class="fa-solid fa-circle-info text-blue-400"></i>
+        <span id="toast-message" class="text-sm font-medium">Notifikasi</span>
+    </div>
+
+    <!-- MAIN APP WRAPPER (TERUS DIPAPARKAN TANPA LOGIN) -->
+    <div id="main-app" class="min-h-screen flex flex-col">
+        <!-- HEADER UTAMA -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-600/20">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-lg text-slate-900 leading-tight">Pengesanan Status Kerja Jabatan</h2>
+                        <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Sistem Penyegerakan Berkelajuan Awan
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- KANDUNGAN UTAMA -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6 flex-grow">
+
+            <!-- BAR PENETAPAN GOOGLE SHEET CLOUD -->
+            <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-cloud text-base"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900">Penyegerakan Google Sheets (Dua Hala)</h3>
+                            <p class="text-xs text-slate-500">Menyokong pembukaan terus dari komputer (Local/File) & Awan tanpa ralat CORS.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="fetchSheetData()" id="btn-sync-live" class="w-full sm:w-auto text-xs px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm shadow-indigo-600/20 transition flex items-center justify-center gap-2 whitespace-nowrap">
+                            <i class="fa-solid fa-rotate" id="sync-icon"></i>
+                            <span id="sync-text">Sync Live</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID: BORANG & REKOD -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- BAHAGIAN KIRI: FILTER & BORANG KERJA (5 COLS) -->
+                <div class="lg:col-span-5 space-y-6">
+                    
+                    <!-- 1. FILTER UNIT (AUTO-LOAD) -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                                <i class="fa-solid fa-filter text-blue-600"></i> Pilihan Unit Jabatan
+                            </span>
+                            <span id="unit-source-badge" class="text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">Langkah 1 (Pratetap)</span>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih Unit:</label>
+                                <select id="unit-select" onchange="handleLoadUnitData(true)" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                    <option value="" disabled selected>-- Sila Pilih Unit --</option>
+                                    <option value="Unit Pentadbiran & Sumber Manusia">Unit Pentadbiran & Sumber Manusia</option>
+                                    <option value="Unit Kewangan & Akaun">Unit Kewangan & Akaun</option>
+                                    <option value="Unit Teknologi Maklumat & Digital">Unit Teknologi Maklumat & Digital</option>
+                                    <option value="Unit Perancangan Strategik & Operasi">Unit Perancangan Strategik & Operasi</option>
+                                    <option value="Unit Komunikasi Korporat & Perhubungan">Unit Komunikasi Korporat & Perhubungan</option>
+                                    <option value="Unit Integriti & Pematuhan">Unit Integriti & Pematuhan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. BORANG PENGISIAN RUANG -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-5">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square text-blue-600"></i> Pengisian Maklumat Kerja
+                            </span>
+                            <span class="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-medium">Langkah 2</span>
+                        </div>
+
+                        <form id="work-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                            <!-- Skop Kerja: Box Boleh Pilih & Scroll -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <i class="fa-solid fa-layer-group text-slate-400 mr-1"></i> Skop Kerja
+                                </label>
+                                <div class="relative">
+                                    <select id="skop-select" required onchange="handleSkopChange()"
+                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition max-h-48 overflow-y-auto cursor-pointer">
+                                        <option value="" disabled selected>-- Sila Pilih Unit Dahulu --</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Nama Kerja: Box Boleh Pilih & Scroll (Filter berdasarkan Skop) -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <i class="fa-solid fa-briefcase text-slate-400 mr-1"></i> Nama / Deskripsi Kerja
+                                </label>
+                                <div class="relative">
+                                    <select id="kerja-select" required onchange="handleKerjaChange()"
+                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition max-h-48 overflow-y-auto cursor-pointer">
+                                        <option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Pilihan Tarikh: Kalendar -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                        <i class="fa-regular fa-calendar-plus text-slate-400 mr-1"></i> Tarikh Mula
+                                    </label>
+                                    <input type="date" id="date-start" required onchange="calculateDueDate()"
+                                        class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                        <i class="fa-regular fa-calendar-check text-slate-400 mr-1"></i> Tarikh Tamat
+                                    </label>
+                                    <input type="date" id="date-end" required onchange="calculateDueDate()"
+                                        class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- Tempoh Due Date Display -->
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+                                <span class="text-slate-600 font-medium">Baki / Tempoh Masa:</span>
+                                <span id="due-date-badge" class="font-bold text-slate-800">Sila pilih tarikh</span>
+                            </div>
+
+                            <!-- MULTIPLE TICK PERATUSAN -->
+                            <div class="space-y-2 pt-2 border-t border-slate-100">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-semibold text-slate-700">Komponen Kemajuan (Multiple Tick):</label>
+                                    <span id="percentage-display" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-800">0%</span>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <!-- Tick 1: 40% -->
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition select-none">
+                                        <input type="checkbox" id="tick-paperwork" value="40" onchange="calculatePercentage()"
+                                            class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                                        <div class="ml-3 flex-grow flex justify-between items-center text-xs">
+                                            <span class="font-medium text-slate-700">Kertas Kerja / Mesyuarat / Usul</span>
+                                            <span class="bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-md">40%</span>
+                                        </div>
+                                    </label>
+
+                                    <!-- Tick 2: 20% -->
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition select-none">
+                                        <input type="checkbox" id="tick-broadcast" value="20" onchange="calculatePercentage()"
+                                            class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                                        <div class="ml-3 flex-grow flex justify-between items-center text-xs">
+                                            <span class="font-medium text-slate-700">Hebahan / Publisiti</span>
+                                            <span class="bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-md">20%</span>
+                                        </div>
+                                    </label>
+
+                                    <!-- Tick 3: 40% -->
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition select-none">
+                                        <input type="checkbox" id="tick-execution" value="40" onchange="calculatePercentage()"
+                                            class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                                        <div class="ml-3 flex-grow flex justify-between items-center text-xs">
+                                            <span class="font-medium text-slate-700">Pelaksanaan Program / Tugasan</span>
+                                            <span class="bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-md">40%</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- RUANG STATUS (AUTO GENERATED) -->
+                            <div class="pt-2">
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Status Tugasan (Automatik)</label>
+                                <div id="status-container" class="flex items-center gap-2 p-3 bg-slate-100 border border-slate-200 rounded-xl">
+                                    <span id="status-icon" class="w-3 h-3 rounded-full bg-slate-400"></span>
+                                    <span id="status-text" class="text-xs font-bold text-slate-600">Belum Mula (0%)</span>
+                                </div>
+                            </div>
+
+                            <!-- BUTANG SIMPAN -->
+                            <div class="pt-2">
+                                <button type="submit" id="btn-save" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <span id="btn-save-text">Simpan & Hantar ke Cloud Google Sheet</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+
+                <!-- BAHAGIAN KANAN: PAPARAN REKOD WAKTU TERSEBUT (7 COLS) -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+                                    Rekod Kerja Yang Diisi (Sesi Semasa)
+                                </h3>
+                                <p class="text-xs text-slate-400">Paparan auto-filter mengikut Unit dan Skop Kerja yang dipilih.</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="record-count-badge" class="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium">
+                                    0 Rekod
+                                </span>
+                                <button onclick="clearCurrentSessionRecords()" class="text-xs text-rose-500 hover:text-rose-700 px-2 py-1 rounded hover:bg-rose-50 transition" title="Kosongkan paparan sesi">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- BAR INDIKATOR AUTO-FILTER -->
+                        <div id="filter-status-bar" class="mt-3 p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2 text-slate-600 truncate">
+                                <i class="fa-solid fa-filter text-blue-500 text-xs"></i>
+                                <span class="font-medium text-slate-500">Tapisan Semasa:</span>
+                                <span id="filter-active-label" class="font-semibold text-slate-800 truncate">Semua Rekod</span>
+                            </div>
+                            <button id="btn-reset-table-filter" onclick="resetTableFilter()" class="hidden text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 whitespace-nowrap">
+                                <i class="fa-solid fa-rotate-left"></i> Papar Semua
+                            </button>
+                        </div>
+
+                        <!-- SENARAI JADUAL PAPARAN -->
+                        <div class="overflow-x-hidden mt-4">
+                            <table class="w-full text-left text-xs table-fixed">
+                                <thead>
+                                    <tr class="text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/70">
+                                        <!-- Ruang Kerja & Unit dilebihkan saiz (44%) -->
+                                        <th class="py-2.5 px-3 font-semibold w-[44%]">Kerja & Unit</th>
+                                        <!-- Tarikh Mula & Tamat (22%) -->
+                                        <th class="py-2.5 px-2 font-semibold w-[22%]">Tarikh</th>
+                                        <!-- Tempoh Hari (12%) -->
+                                        <th class="py-2.5 px-2 font-semibold w-[12%] text-center">Tempoh</th>
+                                        <!-- Peratusan (10%) -->
+                                        <th class="py-2.5 px-1 font-semibold w-[10%] text-center">Kemajuan</th>
+                                        <!-- Status (12%) -->
+                                        <th class="py-2.5 px-2 font-semibold w-[12%] text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="session-records-body" class="divide-y divide-slate-100 text-slate-700">
+                                    <tr id="empty-row">
+                                        <td colspan="5" class="text-center py-12 text-slate-400">
+                                            <i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>
+                                            Belum ada rekod kerja yang diisi pada sesi ini. Sila lengkapkan borang di sebelah kiri.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+            Sistem Pengesanan Status Kerja Jabatan &bull; Sambungan Cloud Google Sheets Terkawal (Akses Admin Sahaja)
+        </footer>
+    </div>
+
+    <!-- LOGIK JAVASCRIPT SISTEM -->
+    <script>
+        // Bank Data Skop & Cadangan Kerja bagi setiap Unit (Hierarki: Unit -> Skop -> Senarai Kerja)
+        const UNIT_DATA_PRESETS = {
+            "Unit Pentadbiran & Sumber Manusia": {
+                "Pengurusan Sumber Manusia & Latihan": [
+                    "Penilaian Prestasi Tahunan (LNPT / e-Prestasi)",
+                    "Pengurusan Fail Perjawatan & Kenaikan Pangkat",
+                    "Penyelarasan Kursus Latihan Dalaman Staf"
+                ],
+                "Pentadbiran Am, Logistik & Aset Pejabat": [
+                    "Verifikasi Stok & Inventori Bekalan Pejabat",
+                    "Penyelenggaraan Kenderaan Rasmi & Bangunan Jabatan"
+                ],
+                "Pengurusan Rekod, Fail & Surat-Menyurat": [
+                    "Pengurusan Fail Arkib & Pelupusan Dokumen Rasmi",
+                    "Pendaftaran & Pengagihan Surat Rasmi Keluar/Masuk"
+                ],
+                "Kebajikan Staf, Cuti & Perjawatan": [
+                    "Semakan Baki Kelayakan Cuti Staf Tahunan",
+                    "Penyelarasan Bantuan Kebajikan & Khairat Warga Jabatan"
+                ],
+                "Keselamatan Pejabat & Fasiliti Bangunan": [
+                    "Pengurusan Pembaharuan Kad Akses & Keselamatan",
+                    "Latihan Kawad Kebakaran & Pemeriksaan Alat Pemadam Api"
+                ]
+            },
+            "Unit Kewangan & Akaun": {
+                "Penyelarasan Bajet & Perancangan Belanjawan": [
+                    "Penyediaan Anggaran Belanja Mengurus (ABM) Tahunan",
+                    "Penyelarasan Mesyuarat Jawatankuasa Pengurusan Kewangan (JPKA)"
+                ],
+                "Pengurusan Bayaran, Pesanan Kerajaan & Invois": [
+                    "Pemprosesan Baucar Bayaran & Tuntutan Pembekal",
+                    "Semakan Laporan Tunggakan Bil & Pembayaran Pukal"
+                ],
+                "Audit Dalaman & Kawalan Kewangan": [
+                    "Penyediaan Penyata Penyesuaian Bank Bulanan",
+                    "Pengauditan Resit & Perbelanjaan Panjar Wang Runcit"
+                ],
+                "Pengurusan Aset Alih & Pelupusan": [
+                    "Pemeriksaan Fizikal Harta Modal & Inventori (KEW.PA)",
+                    "Penyediaan Kertas Kerja Lembaga Pemeriksa Pelupusan Aset"
+                ],
+                "Pungutan Hasil & Akaun Amanah": [
+                    "Penyediaan Penyata Penyata Pungutan Hasil Mingguan",
+                    "Penyelarasan Rekod Akaun Amanah Jabatan"
+                ]
+            },
+            "Unit Teknologi Maklumat & Digital": {
+                "Penyelenggaraan Infrastruktur Rangkaian & Server": [
+                    "Pengukuhan Sandaran Server & Ujian Pemulihan Bencana",
+                    "Penyelenggaraan Rutin Rangkaian LAN, Wi-Fi & Firewall"
+                ],
+                "Pembangunan & Penyelenggaraan Sistem Aplikasi": [
+                    "Pembangunan Modul Tambahan Sistem Dalaman",
+                    "Ujian Penerimaan Pengguna (UAT) Aplikasi Baharu"
+                ],
+                "Keselamatan Siber & Pengurusan Sandaran (Backup)": [
+                    "Audit Pematuhan Keselamatan Maklumat (ICT Security Audit)",
+                    "Kemaskini Lesen Perisian & Patch Keselamatan OS"
+                ],
+                "Sokongan Teknikal & Meja Bantuan (Helpdesk)": [
+                    "Penyediaan Laporan Helpdesk & Pembaikan Komputer Berkala",
+                    "Konfigurasi Stesen Kerja Staf Baharu"
+                ],
+                "Transformasi Digital & Integrasi Data": [
+                    "Penyediaan Integrasi API & Webhook Jabatan",
+                    "Bengkel Penggunaan Portal Digital Warga Pejabat"
+                ]
+            },
+            "Unit Perancangan Strategik & Operasi": {
+                "Pemantauan Petunjuk Prestasi Utama (KPI) Jabatan": [
+                    "Penyelarasan Laporan Suku Tahun KPI Jabatan & Cawangan",
+                    "Penyediaan Laporan Mingguan Status Projek Berimpak Tinggi"
+                ],
+                "Pengurusan Risiko & Pelan Tindakan Operasi": [
+                    "Kemaskini Daftar Profil Risiko Jabatan",
+                    "Penilaian Impak Keberkesanan Dasar & Operasi Semasa"
+                ],
+                "Penyelarasan Mesyuarat Pengurusan Tertinggi": [
+                    "Penyelarasan Sesi Pemukiman / Retreat Pengurusan Tertinggi",
+                    "Penyediaan Minit Tindakan Mesyuarat Pengurusan"
+                ],
+                "Penyelidikan Operasi & Analisis Data Strategik": [
+                    "Penyediaan Buku Pelan Strategik Organisasi",
+                    "Analisis Data Prestasi Operasi & Kepuasan Pelanggan"
+                ],
+                "Pemantauan Projek Pembangunan & Impak": [
+                    "Lawatan Tapak & Verifikasi Fizikal Projek Pembangunan",
+                    "Penyediaan Laporan Kemajuan Projek RMK"
+                ]
+            },
+            "Unit Komunikasi Korporat & Perhubungan": {
+                "Pengurusan Media Sosial & Kandungan Digital": [
+                    "Penerbitan Buletin Suku Tahun & Infografik Rasmi",
+                    "Penyediaan Montaj & Video Korporat Sambutan Tahunan"
+                ],
+                "Perhubungan Media & Kenyataan Akhbar": [
+                    "Hebahan Media & Peliputan Acara Utama Jabatan",
+                    "Pengurusan Sidang Media & Sesi Bersama Wartawan",
+                    "Pemantauan Liputan Berita & Analisis Sentimen Media"
+                ],
+                "Pengurusan Protokol Majlis & Lawatan Rasmi": [
+                    "Penyelarasan Protokol Lawatan Rasmi Delegasi Luar",
+                    "Pengurusan Pengacaraan & Atur Cara Majlis Rasmi"
+                ],
+                "Penerbitan Korporat & Buletin Jabatan": [
+                    "Penyuntingan & Reka Letak Laporan Tahunan Jabatan",
+                    "Penerbitan E-Katalog Perkhidmatan Jabatan"
+                ],
+                "Pengurusan Aduan Awam & Pelanggan": [
+                    "Penyelarasan Hari Bersama Pelanggan & Kaunter Aduan",
+                    "Maklum Balas Terhadap Maklum Balas Pelanggan (SISPAA)"
+                ]
+            },
+            "Unit Integriti & Pematuhan": {
+                "Tadbir Urus & Pengukuhan Integriti": [
+                    "Audit Pematuhan Prosedur Fail Meja & Semakan SOP",
+                    "Penyediaan Pelan Antirasuah Organisasi (OACP)"
+                ],
+                "Pematuhan Standard Prosedur Operasi (SOP) & Arahan Perkhidmatan": [
+                    "Pemeriksaan Mengejut Kaunter & Kawalan Prosedur Kerja",
+                    "Penyelarasan Kajian Semula Manual Prosedur Kerja (MPK)"
+                ],
+                "Pengurusan Salahlaku & Saluran Aduan Whistleblowing": [
+                    "Siasatan Awal Maklum Balas / Aduan Integriti",
+                    "Pengurusan Rekod Rahsia Tatatertib & Salahlaku"
+                ],
+                "Pendidikan, Kesedaran & Nilai Murni": [
+                    "Pelaksanaan Program Wacana Kesedaran Anti-Rasuah",
+                    "Bengkel Pengukuhan Etika & Nilai Murni Warga Jabatan"
+                ],
+                "Penilaian Risiko Rasuah & Ketirisan": [
+                    "Penilaian Kerentanan Rasuah Dalam Perolehan Jabatan",
+                    "Penyediaan Laporan Risiko Integriti Tahunan"
+                ]
+            }
+        };
+
+        // Kredensial Log Masuk Petugas:
+        // Nilai hash SHA-256 rasmi bagi perkataan "petugas123":
+        // 7b411d5167f2b96e95267bf0f6ff16358dbbdf70265ad445cf0154fbdbd572ec
+        const VALID_CREDENTIALS = {
+            username: "petugas",
+            passwordHash: "7b411d5167f2b96e95267bf0f6ff16358dbbdf70265ad445cf0154fbdbd572ec"
+        };
+
+        // State Aplikasi
+        let currentSessionRecords = [];
+        let webhookUrl = "https://script.google.com/macros/s/AKfycbwYsmnqshbpqQsFKqwJHViwOSdc6XeTgoFglyM2lRmLYN4UC31H9YREWkmPbIrS8YiS/exec";
+        let cloudUnitMapping = {};
+
+        // Tunjuk Notifikasi Toast
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            if (!toast || !toastMsg) return;
+
+            toastMsg.innerText = message;
+            if (type === 'success') {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
+            } else if (type === 'error') {
+                toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-info text-blue-400";
+            }
+
+            toast.classList.remove('translate-y-[-150%]', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-150%]', 'opacity-0');
+            }, 3500);
+        }
+
+        // Muat Data Unit (Auto-Load apabila Unit dipilih)
+        function handleLoadUnitData(isAuto = false) {
+            const select = document.getElementById('unit-select');
+            const selectedUnit = select.value;
+
+            if (!selectedUnit) {
+                if (!isAuto) showToast("Sila pilih unit terlebih dahulu!", "error");
+                renderRecordsTable();
+                return;
+            }
+
+            const skopSelect = document.getElementById('skop-select');
+            const kerjaSelect = document.getElementById('kerja-select');
+
+            // Reset dropdown kerja sehingga skop dipilih
+            kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>`;
+
+            // 1. Semak data dari Live Sync Google Sheet
+            if (cloudUnitMapping[selectedUnit]) {
+                const skopList = Object.keys(cloudUnitMapping[selectedUnit]);
+                skopSelect.innerHTML = `<option value="" disabled selected>-- Pilih Skop Kerja (${skopList.length} Pilihan) --</option>`;
+                skopList.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.textContent = item;
+                    skopSelect.appendChild(opt);
+                });
+                showToast(`Auto-load: Skop bagi "${selectedUnit}" sedia dipilih!`, "success");
+            } else {
+                // 2. Fallback kepada Bank Data Preset
+                const presetUnit = UNIT_DATA_PRESETS[selectedUnit];
+                if (presetUnit) {
+                    const skopList = Object.keys(presetUnit);
+                    skopSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Skop Kerja (${skopList.length} Pilihan) --</option>`;
+                    skopList.forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item;
+                        opt.textContent = item;
+                        skopSelect.appendChild(opt);
+                    });
+                    showToast(`Auto-load: Skop bagi "${selectedUnit}" telah dimuatkan.`, "info");
+                }
+            }
+
+            // Kemas kini paparan jadual rekod mengikut Unit yang baharu dipilih
+            renderRecordsTable();
+        }
+
+        // Auto-Load Apabila Skop Kerja Dipilih -> Filter Nama Kerja di bawah Skop tersebut sahaja
+        function handleSkopChange() {
+            const unitSelect = document.getElementById('unit-select');
+            const skopSelect = document.getElementById('skop-select');
+            const kerjaSelect = document.getElementById('kerja-select');
+
+            const selectedUnit = unitSelect.value;
+            const selectedSkop = skopSelect.value;
+
+            if (!selectedUnit || !selectedSkop) {
+                renderRecordsTable();
+                return;
+            }
+
+            let kerjaList = [];
+
+            // 1. Semak dalam data Google Sheet (Live)
+            if (cloudUnitMapping[selectedUnit] && cloudUnitMapping[selectedUnit][selectedSkop]) {
+                kerjaList = cloudUnitMapping[selectedUnit][selectedSkop];
+            } 
+            // 2. Semak dalam data Preset
+            else if (UNIT_DATA_PRESETS[selectedUnit] && UNIT_DATA_PRESETS[selectedUnit][selectedSkop]) {
+                kerjaList = UNIT_DATA_PRESETS[selectedUnit][selectedSkop];
+            }
+
+            if (kerjaList.length > 0) {
+                kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Nama / Deskripsi Kerja (${kerjaList.length} Tugasan) --</option>`;
+                kerjaList.forEach(namaKerja => {
+                    const opt = document.createElement('option');
+                    opt.value = namaKerja;
+                    opt.textContent = namaKerja;
+                    kerjaSelect.appendChild(opt);
+                });
+                showToast(`Auto-load: ${kerjaList.length} tugasan kerja di bawah skop "${selectedSkop}".`, "info");
+            } else {
+                kerjaSelect.innerHTML = `<option value="" disabled selected>-- Tiada senarai kerja khusus bagi skop ini --</option>`;
+            }
+
+            // Kemas kini paparan jadual rekod mengikut Skop Kerja yang baharu dipilih
+            renderRecordsTable();
+        }
+
+        // Apabila Nama Kerja dipilih: Semak jika data sedia ada wujud untuk auto-fill (elak duplikasi)
+        function handleKerjaChange() {
+            const unit = document.getElementById('unit-select').value;
+            const skop = document.getElementById('skop-select').value;
+            const kerja = document.getElementById('kerja-select').value;
+            const btnSaveText = document.getElementById('btn-save-text');
+
+            if (!unit || !skop || !kerja) return;
+
+            // Cari padanan rekod yang disimpan sama ada daripada senarai sesi atau data Google Sheet
+            const existingRecord = currentSessionRecords.find(item => 
+                item.unit.trim().toLowerCase() === unit.trim().toLowerCase() &&
+                item.skop.trim().toLowerCase() === skop.trim().toLowerCase() &&
+                item.kerja.trim().toLowerCase() === kerja.trim().toLowerCase()
+            );
+
+            // Elemen-elemen borang
+            const dateStartInput = document.getElementById('date-start');
+            const dateEndInput = document.getElementById('date-end');
+            const tickPaperwork = document.getElementById('tick-paperwork');
+            const tickBroadcast = document.getElementById('tick-broadcast');
+            const tickExecution = document.getElementById('tick-execution');
+
+            if (existingRecord) {
+                // 1. Format & Isikan Tarikh Mula
+                if (existingRecord.tarikhMula && existingRecord.tarikhMula !== '-' && existingRecord.tarikhMula !== 'undefined') {
+                    dateStartInput.value = normalizeDateString(existingRecord.tarikhMula);
+                } else {
+                    dateStartInput.value = "";
+                }
+
+                // 2. Format & Isikan Tarikh Tamat
+                if (existingRecord.tarikhAkhir && existingRecord.tarikhAkhir !== '-' && existingRecord.tarikhAkhir !== 'undefined') {
+                    dateEndInput.value = normalizeDateString(existingRecord.tarikhAkhir);
+                } else {
+                    dateEndInput.value = "";
+                }
+
+                // Kemas kini paparan Due Date
+                calculateDueDate();
+
+                // 3. Parsing & Pulihkan Peratusan & Status
+                const percentNum = parseInt(existingRecord.peratus) || 0;
+
+                // Setkan checkbox komponen kemajuan berasaskan logik kombinasi (40%, 20%, 40%)
+                tickPaperwork.checked = false;
+                tickBroadcast.checked = false;
+                tickExecution.checked = false;
+
+                if (percentNum === 100) {
+                    tickPaperwork.checked = true;
+                    tickBroadcast.checked = true;
+                    tickExecution.checked = true;
+                } else if (percentNum === 80) {
+                    tickPaperwork.checked = true;
+                    tickExecution.checked = true;
+                } else if (percentNum === 60) {
+                    tickPaperwork.checked = true;
+                    tickBroadcast.checked = true;
+                } else if (percentNum === 40) {
+                    tickPaperwork.checked = true;
+                } else if (percentNum === 20) {
+                    tickBroadcast.checked = true;
+                }
+
+                // 4. Hitung & paparkan semula peratusan serta status tugasan automatik
+                calculatePercentage();
+
+                btnSaveText.innerText = "Kemaskini Rekod Sedia Ada (Cloud)";
+                showToast(`Data sedia ada bagi "${kerja}" telah dimuatkan ke borang.`, "success");
+            } else {
+                // Rekod baru (Belum ada isian sebelum ini)
+                btnSaveText.innerText = "Simpan & Hantar ke Cloud Google Sheet";
+                dateStartInput.value = new Date().toISOString().split('T')[0];
+                dateEndInput.value = "";
+                
+                tickPaperwork.checked = false;
+                tickBroadcast.checked = false;
+                tickExecution.checked = false;
+
+                calculateDueDate();
+                calculatePercentage();
+            }
+        }
+
+        // Helper untuk memastikan format YYYY-MM-DD serasi dengan input date
+        function normalizeDateString(dateVal) {
+            if (!dateVal) return "";
+            // Jika format ISO / YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
+                return dateVal;
+            }
+            // Jika format DD/MM/YYYY
+            if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateVal)) {
+                const parts = dateVal.split('/');
+                const day = parts[0].padStart(2, '0');
+                const month = parts[1].padStart(2, '0');
+                const year = parts[2];
+                return `${year}-${month}-${day}`;
+            }
+            // Percubaan Date constructor biasa
+            const d = new Date(dateVal);
+            if (!isNaN(d.getTime())) {
+                return d.toISOString().split('T')[0];
+            }
+            return "";
+        }
+
+        // Pengiraan Tempoh Due Date
+        function calculateDueDate() {
+            const startVal = document.getElementById('date-start').value;
+            const endVal = document.getElementById('date-end').value;
+            const badge = document.getElementById('due-date-badge');
+
+            if (!startVal || !endVal) {
+                badge.innerText = "Sila pilih tarikh";
+                badge.className = "font-bold text-slate-800";
+                return;
+            }
+
+            const startDate = new Date(startVal);
+            const endDate = new Date(endVal);
+
+            const diffTime = endDate - startDate;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                badge.innerText = "Ralat: Tarikh tamat sebelum tarikh mula";
+                badge.className = "font-bold text-rose-600";
+            } else if (diffDays === 0) {
+                badge.innerText = "Hari yang sama (Hari ini)";
+                badge.className = "font-bold text-amber-600";
+            } else {
+                badge.innerText = `${diffDays} Hari Tempoh Masa`;
+                badge.className = "font-bold text-blue-600";
+            }
+        }
+
+        // Pengiraan Peratusan Berdasarkan Multiple Tick
+        function calculatePercentage() {
+            const tick1 = document.getElementById('tick-paperwork').checked ? 40 : 0;
+            const tick2 = document.getElementById('tick-broadcast').checked ? 20 : 0;
+            const tick3 = document.getElementById('tick-execution').checked ? 40 : 0;
+
+            const total = tick1 + tick2 + tick3;
+            
+            const percentDisplay = document.getElementById('percentage-display');
+            percentDisplay.innerText = `${total}%`;
+
+            if (total === 100) {
+                percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+            } else if (total > 0) {
+                percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800";
+            } else {
+                percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-800";
+            }
+
+            updateStatusDisplay(total);
+            return total;
+        }
+
+        // Menentukan Status Mengikut Peratusan Automatik
+        function updateStatusDisplay(percentage) {
+            const statusContainer = document.getElementById('status-container');
+            const statusText = document.getElementById('status-text');
+            const statusIcon = document.getElementById('status-icon');
+
+            let statusName = "Belum Mula";
+            let colorClass = "bg-slate-100 border-slate-300 text-slate-600";
+            let iconClass = "bg-slate-400";
+
+            if (percentage === 0) {
+                statusName = "Belum Mula";
+                colorClass = "bg-slate-100 border-slate-300 text-slate-600";
+                iconClass = "bg-slate-400";
+            } else if (percentage >= 1 && percentage < 100) {
+                statusName = "Dalam Tindakan";
+                colorClass = "bg-amber-50 border-amber-200 text-amber-700";
+                iconClass = "bg-amber-500 animate-pulse";
+            } else if (percentage === 100) {
+                statusName = "Selesai";
+                colorClass = "bg-emerald-50 border-emerald-200 text-emerald-700";
+                iconClass = "bg-emerald-500";
+            }
+
+            statusContainer.className = `flex items-center gap-2 p-3 border rounded-xl ${colorClass}`;
+            statusIcon.className = `w-3 h-3 rounded-full ${iconClass}`;
+            statusText.innerText = `${statusName} (${percentage}%)`;
+
+            return statusName;
+        }
+
+        // Simpan Data Borang
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const unit = document.getElementById('unit-select').value;
+            const skop = document.getElementById('skop-select').value;
+            const kerja = document.getElementById('kerja-select').value;
+            const tarikhMula = document.getElementById('date-start').value;
+            const tarikhAkhir = document.getElementById('date-end').value;
+
+            if (!unit) {
+                showToast("Sila pilih unit jabatan terlebih dahulu!", "error");
+                return;
+            }
+
+            if (!skop) {
+                showToast("Sila pilih skop kerja daripada senarai!", "error");
+                return;
+            }
+
+            if (!kerja) {
+                showToast("Sila pilih nama/deskripsi kerja!", "error");
+                return;
+            }
+
+            if (new Date(tarikhAkhir) < new Date(tarikhMula)) {
+                showToast("Tarikh tamat mestilah selepas tarikh mula!", "error");
+                return;
+            }
+
+            const peratus = calculatePercentage();
+            let statusText = "Belum Mula";
+            if (peratus >= 1 && peratus < 100) statusText = "Dalam Tindakan";
+            if (peratus === 100) statusText = "Selesai";
+
+            const diffDays = Math.ceil((new Date(tarikhAkhir) - new Date(tarikhMula)) / (1000 * 60 * 60 * 24));
+            const tempohDue = `${diffDays} Hari`;
+
+            const recordItem = {
+                id: Date.now(),
+                kerja: kerja,
+                unit: unit,
+                skop: skop,
+                tarikhMula: tarikhMula,
+                tarikhAkhir: tarikhAkhir,
+                tempohDue: tempohDue,
+                peratus: `${peratus}%`,
+                status: statusText,
+                timestamp: new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            // Semak jika rekod sudah wujud dalam senarai sesi
+            const existingIndex = currentSessionRecords.findIndex(item =>
+                item.unit.trim().toLowerCase() === unit.trim().toLowerCase() &&
+                item.skop.trim().toLowerCase() === skop.trim().toLowerCase() &&
+                item.kerja.trim().toLowerCase() === kerja.trim().toLowerCase()
+            );
+
+            let isUpdate = false;
+            if (existingIndex !== -1) {
+                currentSessionRecords[existingIndex] = recordItem;
+                isUpdate = true;
+                showToast(`Rekod sedia ada "${kerja}" telah dikemaskini.`, "success");
+            } else {
+                currentSessionRecords.unshift(recordItem);
+                showToast(`Rekod baharu berjaya disimpan pada sesi ini!`, "success");
+            }
+
+            renderRecordsTable();
+
+            // Hantar ke Google Sheet jika webhook telah dikonfigurasi
+            if (webhookUrl) {
+                await syncToGoogleSheet(recordItem, isUpdate);
+            } else {
+                showToast("Data disimpan secara lokal (Sila masukkan URL Webhook untuk autosync ke Cloud).", "info");
+            }
+
+            // Kembalikan teks butang simpan ke mod lalai
+            document.getElementById('btn-save-text').innerText = "Simpan & Hantar ke Cloud Google Sheet";
+
+            // RESET SEMUA RUANGAN BORANG UNTUK SEDIA DIISI MAKLUMAT LAIN
+            resetWorkForm();
+        }
+
+        // Fungsi Reset Borang Pengisian Kerja
+        function resetWorkForm() {
+            // 1. Reset Pilihan Unit
+            const unitSelect = document.getElementById('unit-select');
+            if (unitSelect) unitSelect.value = "";
+
+            // 2. Reset Pilihan Skop Kerja
+            const skopSelect = document.getElementById('skop-select');
+            if (skopSelect) {
+                skopSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit Dahulu --</option>`;
+            }
+
+            // 3. Reset Pilihan Nama Kerja
+            const kerjaSelect = document.getElementById('kerja-select');
+            if (kerjaSelect) {
+                kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>`;
+            }
+
+            // 4. Reset Tarikh Mula & Tamat
+            const dateStart = document.getElementById('date-start');
+            const dateEnd = document.getElementById('date-end');
+            if (dateStart) dateStart.value = "";
+            if (dateEnd) dateEnd.value = "";
+
+            // 5. Reset Due Date Badge
+            const dueDateBadge = document.getElementById('due-date-badge');
+            if (dueDateBadge) {
+                dueDateBadge.innerText = "Sila pilih tarikh";
+                dueDateBadge.className = "font-bold text-slate-800";
+            }
+
+            // 6. Reset Checkbox Kemajuan (Multiple Tick)
+            const tick1 = document.getElementById('tick-paperwork');
+            const tick2 = document.getElementById('tick-broadcast');
+            const tick3 = document.getElementById('tick-execution');
+            if (tick1) tick1.checked = false;
+            if (tick2) tick2.checked = false;
+            if (tick3) tick3.checked = false;
+
+            // 7. Reset Peratusan & Status
+            calculatePercentage();
+
+            // 8. Kemas kini jadual semula ke mod tanpa tapisan (papar semua rekod sesi semasa)
+            renderRecordsTable(true);
+        }
+
+        // Paparkan Rekod Sesi Semasa ke Jadual (Auto-filtered mengikut Unit & Skop yang dipilih)
+        function renderRecordsTable(ignoreFilter = false) {
+            const tbody = document.getElementById('session-records-body');
+            const countBadge = document.getElementById('record-count-badge');
+            const filterLabel = document.getElementById('filter-active-label');
+            const btnResetFilter = document.getElementById('btn-reset-table-filter');
+
+            const unitSelect = document.getElementById('unit-select');
+            const skopSelect = document.getElementById('skop-select');
+
+            const selectedUnit = unitSelect ? unitSelect.value : "";
+            const selectedSkop = skopSelect ? skopSelect.value : "";
+
+            let filteredRecords = [...currentSessionRecords];
+
+            // Tentukan status tapisan
+            if (!ignoreFilter && (selectedUnit || selectedSkop)) {
+                if (btnResetFilter) btnResetFilter.classList.remove('hidden');
+
+                if (selectedUnit && selectedSkop) {
+                    filteredRecords = filteredRecords.filter(item => 
+                        item.unit.trim().toLowerCase() === selectedUnit.trim().toLowerCase() &&
+                        item.skop.trim().toLowerCase() === selectedSkop.trim().toLowerCase()
+                    );
+                    if (filterLabel) filterLabel.innerHTML = `<span class="text-blue-600 font-bold">${escapeHtml(selectedUnit)}</span> &rsaquo; <span class="text-slate-800 font-semibold">${escapeHtml(selectedSkop)}</span>`;
+                } else if (selectedUnit) {
+                    filteredRecords = filteredRecords.filter(item => 
+                        item.unit.trim().toLowerCase() === selectedUnit.trim().toLowerCase()
+                    );
+                    if (filterLabel) filterLabel.innerHTML = `<span class="text-blue-600 font-bold">${escapeHtml(selectedUnit)}</span> (Semua Skop)`;
+                }
+            } else {
+                if (btnResetFilter) btnResetFilter.classList.add('hidden');
+                if (filterLabel) filterLabel.textContent = "Semua Rekod (Tiada Tapisan)";
+            }
+
+            countBadge.innerText = `${filteredRecords.length} / ${currentSessionRecords.length} Rekod`;
+
+            if (filteredRecords.length === 0) {
+                let emptyMsg = "Belum ada rekod kerja yang diisi pada sesi ini.";
+                if (selectedUnit && selectedSkop) {
+                    emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b> di bawah skop <b>${escapeHtml(selectedSkop)}</b>.`;
+                } else if (selectedUnit) {
+                    emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b>. Sila isi borang di sebelah kiri.`;
+                }
+
+                tbody.innerHTML = `
+                    <tr id="empty-row">
+                        <td colspan="5" class="text-center py-12 text-slate-400">
+                            <i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>
+                            ${emptyMsg}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = "";
+            filteredRecords.forEach(item => {
+                let statusBadge = "";
+                if (item.status === "Selesai") {
+                    statusBadge = '<span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Selesai</span>';
+                } else if (item.status === "Dalam Tindakan") {
+                    statusBadge = '<span class="inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Tindakan</span>';
+                } else {
+                    statusBadge = '<span class="inline-block bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Belum Mula</span>';
+                }
+
+                html += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 align-top">
+                        <!-- Ruang Kerja & Unit (Lebar 44% dengan word break) -->
+                        <td class="py-2.5 px-3 break-words">
+                            <div class="font-semibold text-slate-900 leading-snug">${escapeHtml(item.kerja)}</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5 leading-tight">${escapeHtml(item.unit)} &bull; <span class="text-slate-400">${escapeHtml(item.skop)}</span></div>
+                        </td>
+                        <!-- Tarikh Mula & Tamat (22% disusun atas-bawah kemas) -->
+                        <td class="py-2.5 px-2 text-[11px] text-slate-600">
+                            <div class="flex items-center gap-1 font-mono text-[10.5px]">
+                                <span class="text-slate-400 text-[9px] uppercase font-sans">M:</span> ${item.tarikhMula}
+                            </div>
+                            <div class="flex items-center gap-1 font-mono text-[10.5px] mt-0.5">
+                                <span class="text-slate-400 text-[9px] uppercase font-sans">T:</span> ${item.tarikhAkhir}
+                            </div>
+                        </td>
+                        <!-- Tempoh Masa (12%) -->
+                        <td class="py-2.5 px-2 text-center text-slate-600">
+                            <span class="inline-block font-semibold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10.5px] leading-tight">
+                                ${item.tempohDue}
+                            </span>
+                        </td>
+                        <!-- Peratusan (10%) -->
+                        <td class="py-2.5 px-1 text-center font-bold text-slate-800 text-xs">
+                            ${item.peratus}
+                        </td>
+                        <!-- Status (12%) -->
+                        <td class="py-2.5 px-2 text-right">
+                            ${statusBadge}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // Tetapkan semula paparan kepada semua rekod tanpa tapisan
+        function resetTableFilter() {
+            renderRecordsTable(true);
+            showToast("Memaparkan semua rekod sesi semasa.", "info");
+        }
+
+        // Hantar Data ke Webhook Google Sheets
+        async function syncToGoogleSheet(record, isUpdate = false) {
+            const btnSave = document.getElementById('btn-save');
+            const originalText = btnSave.innerHTML;
+            btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${isUpdate ? 'Mengemaskini baris di Google Sheet...' : 'Menghantar ke Google Sheet...'}</span>`;
+            btnSave.disabled = true;
+
+            try {
+                const payload = {
+                    action: "upsertWork",
+                    data: {
+                        namaKerja: record.kerja,
+                        unit: record.unit,
+                        skopKerja: record.skop,
+                        tarikhMula: record.tarikhMula,
+                        tarikhAkhir: record.tarikhAkhir,
+                        peratus: record.peratus,
+                        status: record.status
+                    }
+                };
+
+                // Gunakan mode no-cors untuk simpan bagi mengelak sekatan pelayar semasa dibuka dari fail tempatan (file:///)
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+
+                showToast(isUpdate ? "Berjaya! Baris sedia ada di Google Sheet telah dikemaskini." : "Berjaya! Rekod baharu ditambah ke Google Sheet.", "success");
+            } catch (error) {
+                console.error("Ralat simpan ke cloud:", error);
+                showToast("Ralat menghubungi Google Sheet. Semak Webhook URL.", "error");
+            } finally {
+                btnSave.innerHTML = originalText;
+                btnSave.disabled = false;
+            }
+        }
+
+        // Tarik Data (Sync Dua Hala) dari Google Sheets - Kalis CORS & Local file:///
+        async function fetchSheetData() {
+            if (!webhookUrl) {
+                showToast("Sila masukkan URL Webhook Google Sheet dahulu!", "error");
+                return;
+            }
+
+            const btnSync = document.getElementById('btn-sync-live');
+            const syncIcon = document.getElementById('sync-icon');
+            const syncText = document.getElementById('sync-text');
+
+            if (syncIcon) syncIcon.classList.add('fa-spin');
+            if (syncText) syncText.textContent = "Menyegerak...";
+            if (btnSync) btnSync.disabled = true;
+
+            showToast("Menarik data langsung dari Google Sheet...", "info");
+
+            try {
+                // Kaedah 1: Percubaan fetch standard dengan 'cors' & 'redirect: follow'
+                const cacheBuster = `t=${Date.now()}`;
+                const fetchUrl = `${webhookUrl}${webhookUrl.includes('?') ? '&' : '?'}action=getWorks&${cacheBuster}`;
+
+                const res = await fetch(fetchUrl, {
+                    method: 'GET',
+                    mode: 'cors',
+                    redirect: 'follow',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP Error: ${res.status}`);
+                }
+
+                const result = await res.json();
+                processFetchedData(result);
+            } catch (fetchErr) {
+                console.warn("Fetch terus disekat oleh pelayar (CORS/file://), beralih ke mod sandaran JSONP...", fetchErr);
+                
+                // Kaedah 2 (Kalis Sekatan file:///): Sandaran automatik menggunakan teknik suntikan JSONP
+                try {
+                    await fetchViaJsonp();
+                } catch (jsonpErr) {
+                    console.error("Kedua-dua kaedah Fetch & JSONP gagal:", jsonpErr);
+                    showToast("Gagal menarik data dari Google Sheet. Sila pastikan Google Apps Script anda dideploy sebagai Web App (Who has access: Anyone).", "error");
+                }
+            } finally {
+                if (syncIcon) syncIcon.classList.remove('fa-spin');
+                if (syncText) syncText.textContent = "Sync Live";
+                if (btnSync) btnSync.disabled = false;
+            }
+        }
+
+        // Fungsi Sandaran JSONP untuk pelayar yang menyekat fetch dari file:///
+        function fetchViaJsonp() {
+            return new Promise((resolve, reject) => {
+                const callbackName = 'googleSheetCallback_' + Date.now();
+                const timeoutId = setTimeout(() => {
+                    cleanup();
+                    reject(new Error("Masa tamat sambungan Google Sheet (Timeout)."));
+                }, 12000);
+
+                function cleanup() {
+                    if (window[callbackName]) delete window[callbackName];
+                    const scriptTag = document.getElementById(callbackName);
+                    if (scriptTag && scriptTag.parentNode) scriptTag.parentNode.removeChild(scriptTag);
+                    clearTimeout(timeoutId);
+                }
+
+                window[callbackName] = function(data) {
+                    cleanup();
+                    processFetchedData(data);
+                    resolve(data);
+                };
+
+                const script = document.createElement('script');
+                script.id = callbackName;
+                script.src = `${webhookUrl}${webhookUrl.includes('?') ? '&' : '?'}action=getWorks&callback=${callbackName}&t=${Date.now()}`;
+                script.onerror = function() {
+                    cleanup();
+                    reject(new Error("Ralat sambungan skrip JSONP."));
+                };
+                document.body.appendChild(script);
+            });
+        }
+
+        // Memproses data yang diterima daripada Google Sheet
+        function processFetchedData(result) {
+            if (result && result.status === 'success' && Array.isArray(result.data)) {
+                // 1. Kemas kini rekod paparan jadual
+                currentSessionRecords = result.data.map((row, idx) => ({
+                    id: Date.now() + idx,
+                    kerja: row.namaKerja || row[0] || 'Tugasan',
+                    unit: row.unit || row[1] || 'Unit Am',
+                    skop: row.skopKerja || row[2] || '-',
+                    tarikhMula: row.tarikhMula || row[3] || '-',
+                    tarikhAkhir: row.tarikhAkhir || row[4] || '-',
+                    tempohDue: 'Live Sync',
+                    peratus: row.peratus || row[5] || '0%',
+                    status: row.status || row[6] || 'Belum Mula',
+                    timestamp: 'Awan'
+                }));
+
+                renderRecordsTable();
+
+                // 2. Ekstrak data unik secara hierarki:
+                // Unit (Kolum B) -> Skop (Kolum C) -> Senarai Nama Kerja (Kolum A)
+                cloudUnitMapping = {};
+                result.data.forEach(row => {
+                    const namaKerja = String(row.namaKerja || row[0] || '').trim();
+                    const unit = String(row.unit || row[1] || '').trim();
+                    const skop = String(row.skopKerja || row[2] || 'Skop Am').trim();
+
+                    if (unit) {
+                        if (!cloudUnitMapping[unit]) {
+                            cloudUnitMapping[unit] = {};
+                        }
+                        if (!cloudUnitMapping[unit][skop]) {
+                            cloudUnitMapping[unit][skop] = new Set();
+                        }
+                        if (namaKerja) {
+                            cloudUnitMapping[unit][skop].add(namaKerja);
+                        }
+                    }
+                });
+
+                // Tukar Set kepada Array bagi setiap skop
+                Object.keys(cloudUnitMapping).forEach(unit => {
+                    Object.keys(cloudUnitMapping[unit]).forEach(skop => {
+                        cloudUnitMapping[unit][skop] = Array.from(cloudUnitMapping[unit][skop]);
+                    });
+                });
+
+                // 3. Kemas kini dropdown Unit (Kolum B) dengan data dari Google Sheet
+                const sheetUnits = Object.keys(cloudUnitMapping);
+                if (sheetUnits.length > 0) {
+                    const unitSelect = document.getElementById('unit-select');
+                    unitSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit (Daripada Google Sheet) --</option>`;
+                    sheetUnits.forEach(unitName => {
+                        const opt = document.createElement('option');
+                        opt.value = unitName;
+                        opt.textContent = unitName;
+                        unitSelect.appendChild(opt);
+                    });
+
+                    const badge = document.getElementById('unit-source-badge');
+                    if (badge) {
+                        badge.textContent = `Langkah 1 (${sheetUnits.length} Unit dari Google Sheet)`;
+                        badge.className = "text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium border border-emerald-200";
+                    }
+                }
+
+                showToast(`Penyegerakan selesai! ${currentSessionRecords.length} data diterima dari Google Sheet.`, "success");
+            } else {
+                showToast("Format respons Google Sheet tidak padan atau kosong.", "error");
+            }
+        }
+
+        // Kosongkan rekod sesi
+        function clearCurrentSessionRecords() {
+            if (currentSessionRecords.length === 0) return;
+            currentSessionRecords = [];
+            renderRecordsTable();
+            showToast("Senarai paparan sesi semasa dikosongkan.", "info");
+        }
+
+        // Helper Escape HTML
+        function escapeHtml(string) {
+            const div = document.createElement('div');
+            div.innerText = string;
+            return div.innerHTML;
+        }
+
+        // Helper Memastikan Format Peratusan Tetap & Sah (cth: "40%")
+        function formatPercentageFixed(val) {
+            if (val === undefined || val === null || val === '') return '0%';
+            // Buang sebarang simbol bukan digit jika ada
+            const num = parseInt(String(val).replace(/[^0-9]/g, ''), 10);
+            if (isNaN(num)) return '0%';
+            // Hadkan antara 0% hingga 100%
+            const clamped = Math.max(0, Math.min(100, num));
+            return `${clamped}%`;
+        }
+
+        // Paparkan Rekod Sesi Semasa ke Jadual (Auto-filtered mengikut Unit & Skop yang dipilih)
+        function renderRecordsTable(ignoreFilter = false) {
+            const tbody = document.getElementById('session-records-body');
+            const countBadge = document.getElementById('record-count-badge');
+            const filterLabel = document.getElementById('filter-active-label');
+            const btnResetFilter = document.getElementById('btn-reset-table-filter');
+
+            const unitSelect = document.getElementById('unit-select');
+            const skopSelect = document.getElementById('skop-select');
+
+            const selectedUnit = unitSelect ? unitSelect.value : "";
+            const selectedSkop = skopSelect ? skopSelect.value : "";
+
+            let filteredRecords = [...currentSessionRecords];
+
+            // Tentukan status tapisan
+            if (!ignoreFilter && (selectedUnit || selectedSkop)) {
+                if (btnResetFilter) btnResetFilter.classList.remove('hidden');
+
+                if (selectedUnit && selectedSkop) {
+                    filteredRecords = filteredRecords.filter(item => 
+                        item.unit.trim().toLowerCase() === selectedUnit.trim().toLowerCase() &&
+                        item.skop.trim().toLowerCase() === selectedSkop.trim().toLowerCase()
+                    );
+                    if (filterLabel) filterLabel.innerHTML = `<span class="text-blue-600 font-bold">${escapeHtml(selectedUnit)}</span> &rsaquo; <span class="text-slate-800 font-semibold">${escapeHtml(selectedSkop)}</span>`;
+                } else if (selectedUnit) {
+                    filteredRecords = filteredRecords.filter(item => 
+                        item.unit.trim().toLowerCase() === selectedUnit.trim().toLowerCase()
+                    );
+                    if (filterLabel) filterLabel.innerHTML = `<span class="text-blue-600 font-bold">${escapeHtml(selectedUnit)}</span> (Semua Skop)`;
+                }
+            } else {
+                if (btnResetFilter) btnResetFilter.classList.add('hidden');
+                if (filterLabel) filterLabel.textContent = "Semua Rekod (Tiada Tapisan)";
+            }
+
+            countBadge.innerText = `${filteredRecords.length} / ${currentSessionRecords.length} Rekod`;
+
+            if (filteredRecords.length === 0) {
+                let emptyMsg = "Belum ada rekod kerja yang diisi pada sesi ini.";
+                if (selectedUnit && selectedSkop) {
+                    emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b> di bawah skop <b>${escapeHtml(selectedSkop)}</b>.`;
+                } else if (selectedUnit) {
+                    emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b>. Sila isi borang di sebelah kiri.`;
+                }
+
+                tbody.innerHTML = `
+                    <tr id="empty-row">
+                        <td colspan="5" class="text-center py-12 text-slate-400">
+                            <i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>
+                            ${emptyMsg}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = "";
+            filteredRecords.forEach(item => {
+                let statusBadge = "";
+                if (item.status === "Selesai") {
+                    statusBadge = '<span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Selesai</span>';
+                } else if (item.status === "Dalam Tindakan") {
+                    statusBadge = '<span class="inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Tindakan</span>';
+                } else {
+                    statusBadge = '<span class="inline-block bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Belum Mula</span>';
+                }
+
+                // Format kemajuan tetap dalam bentuk peratusan (0% - 100%)
+                const fixedPercentage = formatPercentageFixed(item.peratus);
+
+                html += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 align-top">
+                        <!-- Ruang Kerja & Unit (Lebar 44% dengan word break) -->
+                        <td class="py-2.5 px-3 break-words">
+                            <div class="font-semibold text-slate-900 leading-snug">${escapeHtml(item.kerja)}</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5 leading-tight">${escapeHtml(item.unit)} &bull; <span class="text-slate-400">${escapeHtml(item.skop)}</span></div>
+                        </td>
+                        <!-- Tarikh Mula & Tamat (22% disusun atas-bawah kemas) -->
+                        <td class="py-2.5 px-2 text-[11px] text-slate-600">
+                            <div class="flex items-center gap-1 font-mono text-[10.5px]">
+                                <span class="text-slate-400 text-[9px] uppercase font-sans">M:</span> ${item.tarikhMula}
+                            </div>
+                            <div class="flex items-center gap-1 font-mono text-[10.5px] mt-0.5">
+                                <span class="text-slate-400 text-[9px] uppercase font-sans">T:</span> ${item.tarikhAkhir}
+                            </div>
+                        </td>
+                        <!-- Tempoh Masa (12%) -->
+                        <td class="py-2.5 px-2 text-center text-slate-600">
+                            <span class="inline-block font-semibold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10.5px] leading-tight">
+                                ${item.tempohDue}
+                            </span>
+                        </td>
+                        <!-- Peratusan (10% - Nilai Tetap & Seragam dalam format %) -->
+                        <td class="py-2.5 px-1 text-center font-bold text-slate-800 text-xs font-mono">
+                            ${fixedPercentage}
+                        </td>
+                        <!-- Status (12%) -->
+                        <td class="py-2.5 px-2 text-right">
+                            ${statusBadge}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // Tetapkan semula paparan kepada semua rekod tanpa tapisan
