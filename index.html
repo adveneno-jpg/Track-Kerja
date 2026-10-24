@@ -6,14 +6,19 @@
     <title>Sistem Pengesanan Status Kerja Jabatan</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
+        /* Kustom scrollbar untuk paparan lebih kemas */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 antialiased flex flex-col justify-between">
@@ -24,45 +29,47 @@
         <span id="toast-message" class="text-sm font-medium">Notifikasi</span>
     </div>
 
-    <!-- SKRIN 1: LOGIN PETUGAS (SHA-256 SECURED) -->
-    <div id="login-screen" class="fixed inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-8 space-y-6">
+    <!-- SKRIN KUNCI / LOG MASUK KATA LALUAN (SHA-256) -->
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 sm:p-7 space-y-5 animate-fade-in">
             <div class="text-center space-y-2">
-                <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30">
-                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-inner shadow-blue-500/10">
+                    <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-slate-900">Portal Petugas Jabatan</h1>
-                <p class="text-xs text-slate-500">Sila masukkan ID Pengguna & Kata Laluan untuk pengesahan</p>
+                <h2 class="text-base font-bold text-slate-900">Akses Keselamatan Sistem</h2>
+                <p class="text-xs text-slate-500">Sila masukkan kata laluan untuk mengakses Pengesanan Status Kerja Jabatan.</p>
             </div>
 
-            <form id="login-form" class="space-y-4" onsubmit="handleLogin(event)">
+            <form id="password-form" onsubmit="handlePasswordSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">ID Petugas</label>
+                    <label for="system-password" class="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Kata Laluan Akses:
+                    </label>
                     <div class="relative">
-                        <i class="fa-regular fa-user absolute left-3.5 top-3.5 text-slate-400"></i>
-                        <input type="text" id="login-username" required placeholder="Contoh: petugas" 
-                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition">
+                        <input type="password" id="system-password" required placeholder="Masukkan kata laluan..."
+                            class="w-full text-sm pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none text-sm">
+                            <i id="pwd-eye-icon" class="fa-regular fa-eye"></i>
+                        </button>
                     </div>
+                    <p id="password-error" class="hidden text-[11px] text-rose-600 font-semibold mt-1.5 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>Kata laluan tidak sah! Sila cuba lagi.</span>
+                    </p>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Kata Laluan</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400"></i>
-                        <input type="password" id="login-password" required placeholder="••••••••" 
-                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition">
-                    </div>
-                    <p class="text-[11px] text-slate-400 mt-1">Disulitkan dengan SHA-256 (Lalai: <span class="font-mono text-slate-600">petugas123</span>)</p>
-                </div>
-
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-blue-500/25 transition duration-200 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-to-bracket"></i>
-                    <span>Log Masuk Sistem</span>
+                <button type="submit" id="btn-submit-pwd"
+                    class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-2.5 rounded-xl shadow-md shadow-blue-600/20 text-xs transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-lock-open text-xs"></i>
+                    <span>Sahkan &amp; Akses Sistem</span>
                 </button>
             </form>
 
-            <div class="pt-4 border-t border-slate-100 text-center">
-                <span class="text-xs text-slate-400">Keselamatan Akses Tertutup Jabatan</span>
+            <div class="text-center pt-1 border-t border-slate-100">
+                <p class="text-[10px] text-slate-400 flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-shield-check text-emerald-500"></i>
+                    Disulitkan dengan SHA-256 (Kerahsiaan Tinggi)
+                </p>
             </div>
         </div>
     </div>
@@ -70,25 +77,29 @@
     <!-- MAIN APP WRAPPER -->
     <div id="main-app" class="hidden min-h-screen flex flex-col">
         <!-- HEADER UTAMA -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-600/20">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-600/20 text-lg">
                         <i class="fa-solid fa-list-check"></i>
                     </div>
                     <div>
-                        <h2 class="font-bold text-lg text-slate-900 leading-tight">Pengesanan Status Kerja Jabatan</h2>
-                        <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                        <h1 class="font-bold text-lg text-slate-900 leading-tight">Pengesanan Status Kerja Jabatan</h1>
+                        <p class="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
                             <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            Sistem Penyegerakan Berkelajuan Awan
+                            Sistem Pengurusan Tugasan &amp; Penyegerakan Awan
                         </p>
                     </div>
                 </div>
-
-                <div class="flex items-center gap-2 sm:gap-3">
-                    <button onclick="handleLogout()" class="px-3.5 py-2 text-xs font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition flex items-center gap-1.5">
+                <!-- Status Sambungan, Tarikh Semasa & Butang Log Keluar -->
+                <div class="flex items-center gap-3 text-xs text-slate-500 font-medium">
+                    <div class="hidden sm:flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+                        <i class="fa-regular fa-calendar text-blue-600"></i>
+                        <span id="current-date-badge">Memuatkan tarikh...</span>
+                    </div>
+                    <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-semibold transition flex items-center gap-1.5 text-xs active:scale-95" title="Kunci semula sistem">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        <span>Keluar</span>
+                        <span>Kunci / Keluar</span>
                     </button>
                 </div>
             </div>
@@ -99,20 +110,27 @@
 
             <!-- BAR PENETAPAN GOOGLE SHEET CLOUD -->
             <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                            <i class="fa-solid fa-cloud text-base"></i>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-cloud text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-slate-900">Penyegerakan Google Sheets (Dua Hala)</h3>
-                            <p class="text-xs text-slate-500">Klik butang Sync Live untuk menarik maklumat terkini dari pangkalan data Google Sheet.</p>
+                            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                Penyegerakan Google Sheets (Dua Hala)
+                                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-full">Aktif</span>
+                            </h3>
+                            <p class="text-xs text-slate-500">Menyokong pelayar tempatan (file:///) &amp; hos awan dengan sandaran JSONP automatik.</p>
                         </div>
                     </div>
-                    <div class="flex items-center justify-end">
-                        <button onclick="fetchSheetData()" class="w-full sm:w-auto text-xs px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm shadow-indigo-600/20 transition flex items-center justify-center gap-2 whitespace-nowrap">
-                            <i class="fa-solid fa-rotate"></i>
-                            <span>Sync Live</span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="fetchSheetData()" id="btn-sync-live" class="text-xs px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm shadow-indigo-600/20 transition flex items-center justify-center gap-2 whitespace-nowrap active:scale-95">
+                            <i class="fa-solid fa-rotate" id="sync-icon"></i>
+                            <span id="sync-text">Sync Live Google Sheet</span>
+                        </button>
+                        <button onclick="exportToCSV()" class="text-xs px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Muat Turun Rekod dalam bentuk CSV">
+                            <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                            <span>Eksport CSV</span>
                         </button>
                     </div>
                 </div>
@@ -128,24 +146,22 @@
                     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                                <i class="fa-solid fa-filter text-blue-600"></i> Pilihan Unit Jabatan
+                                <i class="fa-solid fa-building-user text-blue-600"></i> Pilihan Unit Jabatan
                             </span>
-                            <span id="unit-source-badge" class="text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">Langkah 1 (Pratetap)</span>
+                            <span id="unit-source-badge" class="text-[11px] bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full font-medium border border-blue-100">Langkah 1 (Pratetap)</span>
                         </div>
 
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih Unit:</label>
-                                <select id="unit-select" onchange="handleLoadUnitData(true)" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
-                                    <option value="" disabled selected>-- Sila Pilih Unit --</option>
-                                    <option value="Unit Pentadbiran & Sumber Manusia">Unit Pentadbiran & Sumber Manusia</option>
-                                    <option value="Unit Kewangan & Akaun">Unit Kewangan & Akaun</option>
-                                    <option value="Unit Teknologi Maklumat & Digital">Unit Teknologi Maklumat & Digital</option>
-                                    <option value="Unit Perancangan Strategik & Operasi">Unit Perancangan Strategik & Operasi</option>
-                                    <option value="Unit Komunikasi Korporat & Perhubungan">Unit Komunikasi Korporat & Perhubungan</option>
-                                    <option value="Unit Integriti & Pematuhan">Unit Integriti & Pematuhan</option>
-                                </select>
-                            </div>
+                        <div>
+                            <label for="unit-select" class="block text-xs font-semibold text-slate-700 mb-1.5">Pilih Unit Kerja:</label>
+                            <select id="unit-select" onchange="handleLoadUnitData(true)" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                                <option value="" disabled selected>-- Sila Pilih Unit --</option>
+                                <option value="Unit Pentadbiran & Sumber Manusia">Unit Pentadbiran &amp; Sumber Manusia</option>
+                                <option value="Unit Kewangan & Akaun">Unit Kewangan &amp; Akaun</option>
+                                <option value="Unit Teknologi Maklumat & Digital">Unit Teknologi Maklumat &amp; Digital</option>
+                                <option value="Unit Perancangan Strategik & Operasi">Unit Perancangan Strategik &amp; Operasi</option>
+                                <option value="Unit Komunikasi Korporat & Perhubungan">Unit Komunikasi Korporat &amp; Perhubungan</option>
+                                <option value="Unit Integriti & Pematuhan">Unit Integriti &amp; Pematuhan</option>
+                            </select>
                         </div>
                     </div>
 
@@ -159,43 +175,43 @@
                         </div>
 
                         <form id="work-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                            <!-- Skop Kerja: Box Boleh Pilih & Scroll -->
+                            <!-- Skop Kerja -->
                             <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                <label for="skop-select" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     <i class="fa-solid fa-layer-group text-slate-400 mr-1"></i> Skop Kerja
                                 </label>
                                 <div class="relative">
                                     <select id="skop-select" required onchange="handleSkopChange()"
-                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition max-h-48 overflow-y-auto cursor-pointer">
+                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
                                         <option value="" disabled selected>-- Sila Pilih Unit Dahulu --</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <!-- Nama Kerja: Box Boleh Pilih & Scroll (Filter berdasarkan Skop) -->
+                            <!-- Nama Kerja (Filter berasaskan Skop) -->
                             <div>
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                <label for="kerja-select" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                     <i class="fa-solid fa-briefcase text-slate-400 mr-1"></i> Nama / Deskripsi Kerja
                                 </label>
                                 <div class="relative">
                                     <select id="kerja-select" required onchange="handleKerjaChange()"
-                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition max-h-48 overflow-y-auto cursor-pointer">
+                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
                                         <option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <!-- Pilihan Tarikh: Kalendar -->
+                            <!-- Pilihan Tarikh: Tarikh Mula & Tarikh Tamat -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <label for="date-start" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                         <i class="fa-regular fa-calendar-plus text-slate-400 mr-1"></i> Tarikh Mula
                                     </label>
                                     <input type="date" id="date-start" required onchange="calculateDueDate()"
                                         class="w-full text-sm px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                    <label for="date-end" class="block text-xs font-semibold text-slate-700 mb-1.5">
                                         <i class="fa-regular fa-calendar-check text-slate-400 mr-1"></i> Tarikh Tamat
                                     </label>
                                     <input type="date" id="date-end" required onchange="calculateDueDate()"
@@ -209,8 +225,61 @@
                                 <span id="due-date-badge" class="font-bold text-slate-800">Sila pilih tarikh</span>
                             </div>
 
-                            <!-- MULTIPLE TICK PERATUSAN -->
-                            <div class="space-y-2 pt-2 border-t border-slate-100">
+                            <!-- PEMILIHAN / INDIKATOR JENIS KEMAJUAN (MESYUARAT VS STANDARD) -->
+                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                                <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-sliders text-indigo-500"></i> Kaedah Pengiraan Kemajuan:
+                                </span>
+                                <button type="button" id="btn-toggle-meeting-mode" onclick="toggleProgressModeManual()" 
+                                    class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition flex items-center gap-1">
+                                    <i class="fa-solid fa-arrows-rotate text-blue-500"></i>
+                                    <span id="mode-toggle-label">Standard (3 Fasa)</span>
+                                </button>
+                            </div>
+
+                            <!-- 1. KOMPONEN KEMAJUAN KHAS: BILANGAN MESYUARAT (MAKSIMUM 7 KALI = 100%) -->
+                            <div id="section-progress-meeting" class="space-y-3 p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-xl hidden transition-all">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full bg-indigo-600 animate-ping"></span>
+                                            <label class="text-xs font-bold text-indigo-900">Kemajuan Mesyuarat (Sasaran 7 Kali):</label>
+                                        </div>
+                                        <p class="text-[11px] text-indigo-700 mt-0.5">Setiap 1 sesi mesyuarat = ~14.3% (7 kali = 100%)</p>
+                                    </div>
+                                    <span id="meeting-percentage-display" class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-600 text-white shadow-xs">
+                                        0 / 7 (0%)
+                                    </span>
+                                </div>
+
+                                <!-- Bar visual progress mesyuarat -->
+                                <div class="w-full bg-white/80 rounded-full h-2 border border-indigo-200 overflow-hidden">
+                                    <div id="meeting-progress-bar" class="bg-indigo-600 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                                </div>
+
+                                <!-- 7 Kotak Semak Sesi Mesyuarat -->
+                                <div class="grid grid-cols-7 gap-1.5 pt-1">
+                                    <button type="button" onclick="setMeetingCount(1)" id="btn-meet-1" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">1</button>
+                                    <button type="button" onclick="setMeetingCount(2)" id="btn-meet-2" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">2</button>
+                                    <button type="button" onclick="setMeetingCount(3)" id="btn-meet-3" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">3</button>
+                                    <button type="button" onclick="setMeetingCount(4)" id="btn-meet-4" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">4</button>
+                                    <button type="button" onclick="setMeetingCount(5)" id="btn-meet-5" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">5</button>
+                                    <button type="button" onclick="setMeetingCount(6)" id="btn-meet-6" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">6</button>
+                                    <button type="button" onclick="setMeetingCount(7)" id="btn-meet-7" class="meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-xs font-bold transition">7</button>
+                                </div>
+
+                                <!-- Kawalan Cepat + / - & Info Status Semasa -->
+                                <div class="flex items-center justify-between text-xs pt-1">
+                                    <span class="text-indigo-800 font-medium" id="meeting-count-desc">Belum ada mesyuarat dijalankan.</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <button type="button" onclick="adjustMeetingCount(-1)" class="w-7 h-7 rounded-lg bg-white border border-indigo-200 hover:bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center transition active:scale-95" title="Kurang 1 Mesyuarat">-</button>
+                                        <button type="button" onclick="adjustMeetingCount(1)" class="w-7 h-7 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center justify-center transition active:scale-95 shadow-xs" title="Tambah 1 Mesyuarat">+</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. MULTIPLE TICK PERATUSAN STANDARD (40% + 20% + 40%) -->
+                            <div id="section-progress-standard" class="space-y-2">
                                 <div class="flex items-center justify-between">
                                     <label class="text-xs font-semibold text-slate-700">Komponen Kemajuan (Multiple Tick):</label>
                                     <span id="percentage-display" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-800">0%</span>
@@ -252,17 +321,20 @@
                             <!-- RUANG STATUS (AUTO GENERATED) -->
                             <div class="pt-2">
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">Status Tugasan (Automatik)</label>
-                                <div id="status-container" class="flex items-center gap-2 p-3 bg-slate-100 border border-slate-200 rounded-xl">
+                                <div id="status-container" class="flex items-center gap-2 p-3 bg-slate-100 border border-slate-200 rounded-xl transition">
                                     <span id="status-icon" class="w-3 h-3 rounded-full bg-slate-400"></span>
                                     <span id="status-text" class="text-xs font-bold text-slate-600">Belum Mula (0%)</span>
                                 </div>
                             </div>
 
-                            <!-- BUTANG SIMPAN -->
-                            <div class="pt-2">
-                                <button type="submit" id="btn-save" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+                            <!-- BUTANG SIMPAN & SET SEMULA -->
+                            <div class="pt-2 flex flex-col gap-2">
+                                <button type="submit" id="btn-save" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2 active:scale-[0.99]">
                                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                                    <span id="btn-save-text">Simpan & Hantar ke Cloud Google Sheet</span>
+                                    <span id="btn-save-text">Simpan &amp; Hantar ke Cloud Google Sheet</span>
+                                </button>
+                                <button type="button" onclick="resetWorkForm()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium py-2 rounded-xl transition">
+                                    <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Kosongkan Isian Borang
                                 </button>
                             </div>
                         </form>
@@ -270,53 +342,55 @@
 
                 </div>
 
-                <!-- BAHAGIAN KANAN: PAPARAN REKOD WAKTU TERSEBUT (7 COLS) -->
+                <!-- BAHAGIAN KANAN: PAPARAN REKOD (7 COLS) -->
                 <div class="lg:col-span-7 space-y-4">
                     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+                        <!-- HEADER JADUAL -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
                             <div>
-                                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                <h2 class="font-bold text-slate-900 text-sm flex items-center gap-2">
                                     <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
-                                    Rekod Kerja Yang Diisi (Sesi Semasa)
-                                </h3>
+                                    Rekod Kerja Yang Diisi
+                                </h2>
                                 <p class="text-xs text-slate-400">Paparan auto-filter mengikut Unit dan Skop Kerja yang dipilih.</p>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span id="record-count-badge" class="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium">
                                     0 Rekod
                                 </span>
-                                <button onclick="clearCurrentSessionRecords()" class="text-xs text-rose-500 hover:text-rose-700 px-2 py-1 rounded hover:bg-rose-50 transition" title="Kosongkan paparan sesi">
-                                    <i class="fa-regular fa-trash-can"></i>
+                            </div>
+                        </div>
+
+                        <!-- BAR CARIAN & INDIKATOR TAPISAN -->
+                        <div class="mt-4 space-y-2">
+                            <!-- Input Carian Cepat -->
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input type="text" id="table-search-input" onkeyup="handleSearch()" placeholder="Cari nama kerja, unit atau skop..."
+                                    class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50">
+                            </div>
+
+                            <div id="filter-status-bar" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-2 text-slate-600 truncate mr-2">
+                                    <i class="fa-solid fa-filter text-blue-500 text-xs"></i>
+                                    <span class="font-medium text-slate-500">Tapisan Semasa:</span>
+                                    <span id="filter-active-label" class="font-semibold text-slate-800 truncate">Semua Rekod (Tiada Tapisan)</span>
+                                </div>
+                                <button id="btn-reset-table-filter" onclick="resetTableFilter()" class="hidden text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 whitespace-nowrap">
+                                    <i class="fa-solid fa-rotate-left"></i> Papar Semua
                                 </button>
                             </div>
                         </div>
 
-                        <!-- BAR INDIKATOR AUTO-FILTER -->
-                        <div id="filter-status-bar" class="mt-3 p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
-                            <div class="flex items-center gap-2 text-slate-600 truncate">
-                                <i class="fa-solid fa-filter text-blue-500 text-xs"></i>
-                                <span class="font-medium text-slate-500">Tapisan Semasa:</span>
-                                <span id="filter-active-label" class="font-semibold text-slate-800 truncate">Semua Rekod</span>
-                            </div>
-                            <button id="btn-reset-table-filter" onclick="resetTableFilter()" class="hidden text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 whitespace-nowrap">
-                                <i class="fa-solid fa-rotate-left"></i> Papar Semua
-                            </button>
-                        </div>
-
                         <!-- SENARAI JADUAL PAPARAN -->
-                        <div class="overflow-x-hidden mt-4">
-                            <table class="w-full text-left text-xs table-fixed">
+                        <div class="overflow-x-auto mt-4">
+                            <table class="w-full text-left text-xs table-fixed min-w-[540px]">
                                 <thead>
                                     <tr class="text-slate-400 uppercase tracking-wider border-b border-slate-100 bg-slate-50/70">
-                                        <!-- Ruang Kerja & Unit dilebihkan saiz (44%) -->
-                                        <th class="py-2.5 px-3 font-semibold w-[44%]">Kerja & Unit</th>
-                                        <!-- Tarikh Mula & Tamat (22%) -->
+                                        <th class="py-2.5 px-3 font-semibold w-[44%]">Kerja &amp; Unit</th>
                                         <th class="py-2.5 px-2 font-semibold w-[22%]">Tarikh</th>
-                                        <!-- Tempoh Hari (12%) -->
                                         <th class="py-2.5 px-2 font-semibold w-[12%] text-center">Tempoh</th>
-                                        <!-- Peratusan (10%) -->
                                         <th class="py-2.5 px-1 font-semibold w-[10%] text-center">Kemajuan</th>
-                                        <!-- Status (12%) -->
                                         <th class="py-2.5 px-2 font-semibold w-[12%] text-right">Status</th>
                                     </tr>
                                 </thead>
@@ -338,13 +412,108 @@
         </main>
 
         <!-- FOOTER -->
-        <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
-            Sistem Pengesanan Status Kerja Jabatan &bull; Sambungan Cloud Google Sheets Terkawal (Akses Admin Sahaja)
+        <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500 mt-6">
+            Sistem Pengesanan Status Kerja Jabatan &bull; Sambungan Cloud Google Sheets Terkawal
         </footer>
     </div>
 
     <!-- LOGIK JAVASCRIPT SISTEM -->
     <script>
+        // KATA LALUAN DISULITKAN DENGAN SHA-256
+        // Kata laluan lalai: admin123
+        // Hash SHA-256 bagi "admin123":
+        const PASSWORD_SHA256_HASH = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
+
+        // Fungsi Penukaran Rentetan Teks kepada Hash SHA-256
+        async function sha256(str) {
+            const buffer = new TextEncoder().encode(str);
+            const digest = await crypto.subtle.digest('SHA-256', buffer);
+            return Array.from(new Uint8Array(digest))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        // Semakan Log Masuk Kata Laluan
+        async function handlePasswordSubmit(event) {
+            event.preventDefault();
+            const pwdInput = document.getElementById('system-password');
+            const errorMsg = document.getElementById('password-error');
+            const enteredPassword = pwdInput.value;
+
+            if (!enteredPassword) return;
+
+            try {
+                const computedHash = await sha256(enteredPassword);
+
+                if (computedHash === PASSWORD_SHA256_HASH) {
+                    // Simpan status sesi dalam sessionStorage
+                    sessionStorage.setItem('sistem_kerja_auth', 'true');
+                    
+                    if (errorMsg) errorMsg.classList.add('hidden');
+                    pwdInput.value = "";
+
+                    unlockApp();
+                    showToast("Kata laluan disahkan! Selamat datang.", "success");
+                } else {
+                    if (errorMsg) errorMsg.classList.remove('hidden');
+                    pwdInput.classList.add('border-rose-500', 'ring-1', 'ring-rose-500');
+                    pwdInput.select();
+                    showToast("Kata laluan salah. Akses ditolak!", "error");
+                }
+            } catch (err) {
+                console.error("Ralat pengesahan hash:", err);
+                showToast("Ralat memproses keselamatan kata laluan.", "error");
+            }
+        }
+
+        // Buka Kunci Paparan Aplikasi
+        function unlockApp() {
+            const loginModal = document.getElementById('login-modal');
+            const mainApp = document.getElementById('main-app');
+
+            if (loginModal) loginModal.classList.add('hidden');
+            if (mainApp) mainApp.classList.remove('hidden');
+
+            // Muatkan rekod dan data Google Sheet selepas dibuka
+            loadLocalRecords();
+            fetchSheetData();
+        }
+
+        // Kunci Semula / Log Keluar
+        function handleLogout() {
+            sessionStorage.removeItem('sistem_kerja_auth');
+            const loginModal = document.getElementById('login-modal');
+            const mainApp = document.getElementById('main-app');
+            const pwdInput = document.getElementById('system-password');
+            const errorMsg = document.getElementById('password-error');
+
+            if (mainApp) mainApp.classList.add('hidden');
+            if (loginModal) loginModal.classList.remove('hidden');
+            if (pwdInput) {
+                pwdInput.value = "";
+                pwdInput.classList.remove('border-rose-500', 'ring-1', 'ring-rose-500');
+                pwdInput.focus();
+            }
+            if (errorMsg) errorMsg.classList.add('hidden');
+
+            showToast("Sistem berjaya dikunci semula.", "info");
+        }
+
+        // Lihat / Sembunyi Kata Laluan
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('system-password');
+            const eyeIcon = document.getElementById('pwd-eye-icon');
+            if (!pwdInput || !eyeIcon) return;
+
+            if (pwdInput.type === "password") {
+                pwdInput.type = "text";
+                eyeIcon.className = "fa-regular fa-eye-slash text-blue-600";
+            } else {
+                pwdInput.type = "password";
+                eyeIcon.className = "fa-regular fa-eye text-slate-400";
+            }
+        }
+
         // Bank Data Skop & Cadangan Kerja bagi setiap Unit (Hierarki: Unit -> Skop -> Senarai Kerja)
         const UNIT_DATA_PRESETS = {
             "Unit Pentadbiran & Sumber Manusia": {
@@ -483,25 +652,59 @@
             }
         };
 
-        // Kredensial Log Masuk Petugas:
-        // Hash SHA-256 perkataan: "petugas123"
-        const VALID_CREDENTIALS = {
-            username: "petugas",
-            passwordHash: "2113d2ca92b7f17680876ce0ac46c1b7f2e306d8dc7062bd92bbfb6bf5e9418e"
-        };
-
         // State Aplikasi
         let currentSessionRecords = [];
-        let webhookUrl = "https://script.google.com/macros/s/AKfycbwYsmnqshbpqQsFKqwJHViwOSdc6XeTgoFglyM2lRmLYN4UC31H9YREWkmPbIrS8YiS/exec";
+        const webhookUrl = "https://script.google.com/macros/s/AKfycbwYsmnqshbpqQsFKqwJHViwOSdc6XeTgoFglyM2lRmLYN4UC31H9YREWkmPbIrS8YiS/exec";
         let cloudUnitMapping = {};
+        let searchQuery = "";
+        let isMeetingMode = false;
+        let currentMeetingCount = 0; // 0 hingga 7 kali
 
-        // Fungsi Enkripsi SHA-256 menggunakan Web Crypto API
-        async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-            return hashHex;
+        // Inisialisasi Aplikasi Semasa Window Sedia
+        window.onload = function() {
+            // Paparkan tarikh semasa
+            const dateBadge = document.getElementById('current-date-badge');
+            if (dateBadge) {
+                const now = new Date();
+                dateBadge.textContent = now.toLocaleDateString('ms-MY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            }
+
+            // Tetapkan tarikh mula borang secara lalai ke hari ini
+            const dateStartInput = document.getElementById('date-start');
+            if (dateStartInput) {
+                dateStartInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            // Semak status log masuk sesi semasa
+            const isAuthenticated = sessionStorage.getItem('sistem_kerja_auth') === 'true';
+            if (isAuthenticated) {
+                unlockApp();
+            } else {
+                const pwdInput = document.getElementById('system-password');
+                if (pwdInput) pwdInput.focus();
+            }
+        };
+
+        // Muat rekod daripada localStorage
+        function loadLocalRecords() {
+            try {
+                const saved = localStorage.getItem('sistem_status_kerja_records');
+                if (saved) {
+                    currentSessionRecords = JSON.parse(saved);
+                    renderRecordsTable();
+                }
+            } catch (e) {
+                console.warn("Gagal memuatkan rekod tempatan:", e);
+            }
+        }
+
+        // Simpan rekod ke localStorage
+        function saveLocalRecords() {
+            try {
+                localStorage.setItem('sistem_status_kerja_records', JSON.stringify(currentSessionRecords));
+            } catch (e) {
+                console.warn("Gagal menyimpan ke localStorage:", e);
+            }
         }
 
         // Tunjuk Notifikasi Toast
@@ -525,52 +728,6 @@
             setTimeout(() => {
                 toast.classList.add('translate-y-[-150%]', 'opacity-0');
             }, 3500);
-        }
-
-        // Pengendali Log Masuk Petugas
-        async function handleLogin(event) {
-            if (event) event.preventDefault();
-
-            const usernameInput = document.getElementById('login-username').value.trim();
-            const passwordInput = document.getElementById('login-password').value;
-
-            if (!usernameInput || !passwordInput) {
-                showToast("Sila lengkapkan ID Petugas dan Kata Laluan!", "error");
-                return;
-            }
-
-            try {
-                const hashedInput = await sha256(passwordInput);
-
-                if (usernameInput.toLowerCase() === VALID_CREDENTIALS.username && hashedInput === VALID_CREDENTIALS.passwordHash) {
-                    sessionStorage.setItem('dept_auth_session', 'logged_in');
-                    sessionStorage.setItem('dept_user', usernameInput);
-
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('main-app').classList.remove('hidden');
-
-                    showToast(`Log masuk berjaya! Selamat bertugas.`, "success");
-                } else {
-                    showToast("ID Petugas atau Kata Laluan tidak sah!", "error");
-                }
-            } catch (err) {
-                console.error("Ralat SHA-256:", err);
-                showToast("Ralat memproses kata laluan.", "error");
-            }
-        }
-
-        // Pengendali Log Keluar
-        function handleLogout() {
-            sessionStorage.removeItem('dept_auth_session');
-            sessionStorage.removeItem('dept_user');
-
-            document.getElementById('login-username').value = "";
-            document.getElementById('login-password').value = "";
-
-            document.getElementById('main-app').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden');
-
-            showToast("Anda telah berjaya log keluar dari sistem.", "info");
         }
 
         // Muat Data Unit (Auto-Load apabila Unit dipilih)
@@ -600,9 +757,9 @@
                     opt.textContent = item;
                     skopSelect.appendChild(opt);
                 });
-                showToast(`Auto-load: Skop bagi "${selectedUnit}" sedia dipilih!`, "success");
+                showToast(`Skop bagi "${selectedUnit}" sedia dipilih.`, "info");
             } else {
-                // 2. Fallback kepada Bank Data Preset
+                // 2. Sandaran kepada Bank Data Preset
                 const presetUnit = UNIT_DATA_PRESETS[selectedUnit];
                 if (presetUnit) {
                     const skopList = Object.keys(presetUnit);
@@ -613,15 +770,13 @@
                         opt.textContent = item;
                         skopSelect.appendChild(opt);
                     });
-                    showToast(`Auto-load: Skop bagi "${selectedUnit}" telah dimuatkan.`, "info");
                 }
             }
 
-            // Kemas kini paparan jadual rekod mengikut Unit yang baharu dipilih
             renderRecordsTable();
         }
 
-        // Auto-Load Apabila Skop Kerja Dipilih -> Filter Nama Kerja di bawah Skop tersebut sahaja
+        // Auto-Load Apabila Skop Kerja Dipilih -> Filter Nama Kerja di bawah Skop
         function handleSkopChange() {
             const unitSelect = document.getElementById('unit-select');
             const skopSelect = document.getElementById('skop-select');
@@ -637,33 +792,143 @@
 
             let kerjaList = [];
 
-            // 1. Semak dalam data Google Sheet (Live)
+            // 1. Semak data Google Sheet
             if (cloudUnitMapping[selectedUnit] && cloudUnitMapping[selectedUnit][selectedSkop]) {
                 kerjaList = cloudUnitMapping[selectedUnit][selectedSkop];
             } 
-            // 2. Semak dalam data Preset
+            // 2. Semak Preset
             else if (UNIT_DATA_PRESETS[selectedUnit] && UNIT_DATA_PRESETS[selectedUnit][selectedSkop]) {
                 kerjaList = UNIT_DATA_PRESETS[selectedUnit][selectedSkop];
             }
 
             if (kerjaList.length > 0) {
-                kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Nama / Deskripsi Kerja (${kerjaList.length} Tugasan) --</option>`;
+                kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Tugasan (${kerjaList.length} Pilihan) --</option>`;
                 kerjaList.forEach(namaKerja => {
                     const opt = document.createElement('option');
                     opt.value = namaKerja;
                     opt.textContent = namaKerja;
                     kerjaSelect.appendChild(opt);
                 });
-                showToast(`Auto-load: ${kerjaList.length} tugasan kerja di bawah skop "${selectedSkop}".`, "info");
             } else {
                 kerjaSelect.innerHTML = `<option value="" disabled selected>-- Tiada senarai kerja khusus bagi skop ini --</option>`;
             }
 
-            // Kemas kini paparan jadual rekod mengikut Skop Kerja yang baharu dipilih
+            // Semak jika nama skop mempunyai unsur mesyuarat
+            detectAndApplyMeetingMode(selectedSkop);
+
             renderRecordsTable();
         }
 
-        // Apabila Nama Kerja dipilih: Semak jika data sedia ada wujud untuk auto-fill (elak duplikasi)
+        // Semak adakah teks mengandungi kata kunci mesyuarat
+        function checkIsMeetingText(text) {
+            if (!text) return false;
+            const t = text.toLowerCase();
+            return t.includes("mesyuarat") || t.includes("meeting") || t.includes("jpka");
+        }
+
+        // Mengesan dan mengaktifkan mod mesyuarat secara automatik
+        function detectAndApplyMeetingMode(textToInspect) {
+            const isMeeting = checkIsMeetingText(textToInspect);
+            setMeetingMode(isMeeting);
+        }
+
+        // Tetapkan mod komponen kemajuan (Mesyuarat vs Standard)
+        function setMeetingMode(active) {
+            isMeetingMode = active;
+            const secMeeting = document.getElementById('section-progress-meeting');
+            const secStandard = document.getElementById('section-progress-standard');
+            const toggleLabel = document.getElementById('mode-toggle-label');
+
+            if (isMeetingMode) {
+                secMeeting.classList.remove('hidden');
+                secStandard.classList.add('hidden');
+                if (toggleLabel) toggleLabel.innerHTML = `<span class="text-indigo-600 font-bold">Mesyuarat (7 Kali)</span>`;
+            } else {
+                secMeeting.classList.add('hidden');
+                secStandard.classList.remove('hidden');
+                if (toggleLabel) toggleLabel.innerHTML = `<span>Standard (3 Fasa)</span>`;
+            }
+
+            calculatePercentage();
+        }
+
+        // Butang manual untuk menukar mod jika pengguna mahu mod mesyuarat secara sukarela
+        function toggleProgressModeManual() {
+            setMeetingMode(!isMeetingMode);
+            showToast(`Mod kemajuan ditukar kepada: ${isMeetingMode ? 'Mesyuarat (Sasaran 7 Kali)' : 'Standard (40/20/40)'}`, "info");
+        }
+
+        // Menetapkan bilangan mesyuarat (1 - 7)
+        function setMeetingCount(count) {
+            if (count < 0) count = 0;
+            if (count > 7) count = 7;
+            currentMeetingCount = count;
+            updateMeetingUI();
+            calculatePercentage();
+        }
+
+        // Tambah atau tolak bilangan mesyuarat
+        function adjustMeetingCount(delta) {
+            setMeetingCount(currentMeetingCount + delta);
+        }
+
+        // Mengemaskini UI visual mesyuarat (butang 1-7, bar kemajuan, teks)
+        function updateMeetingUI() {
+            const display = document.getElementById('meeting-percentage-display');
+            const bar = document.getElementById('meeting-progress-bar');
+            const desc = document.getElementById('meeting-count-desc');
+
+            // Pengiraan peratus: 7 kali = 100%
+            const percent = calculateMeetingPercentageVal(currentMeetingCount);
+
+            if (display) {
+                display.innerText = `${currentMeetingCount} / 7 (${percent}%)`;
+                display.className = currentMeetingCount === 7 
+                    ? "text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-600 text-white shadow-xs"
+                    : (currentMeetingCount > 0 
+                        ? "text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-600 text-white shadow-xs" 
+                        : "text-xs font-bold px-2.5 py-1 rounded-full bg-slate-400 text-white shadow-xs");
+            }
+
+            if (bar) {
+                bar.style.width = `${percent}%`;
+                bar.className = currentMeetingCount === 7 
+                    ? "bg-emerald-500 h-full rounded-full transition-all duration-300"
+                    : "bg-indigo-600 h-full rounded-full transition-all duration-300";
+            }
+
+            // Kemas kini gaya 7 butang langkah
+            for (let i = 1; i <= 7; i++) {
+                const btn = document.getElementById(`btn-meet-${i}`);
+                if (!btn) continue;
+                if (i <= currentMeetingCount) {
+                    btn.className = "meet-step-btn py-2 text-center rounded-lg border border-indigo-600 bg-indigo-600 text-white text-xs font-bold shadow-xs transition";
+                } else {
+                    btn.className = "meet-step-btn py-2 text-center rounded-lg border border-slate-200 bg-white hover:bg-indigo-100 text-slate-700 text-xs font-bold transition";
+                }
+            }
+
+            if (desc) {
+                if (currentMeetingCount === 0) {
+                    desc.innerText = "Belum ada mesyuarat dijalankan.";
+                } else if (currentMeetingCount === 7) {
+                    desc.innerHTML = `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Sasaran 7 kali mesyuarat selesai!</span>`;
+                } else {
+                    const baki = 7 - currentMeetingCount;
+                    desc.innerHTML = `Telah dijalankan <b>${currentMeetingCount} kali</b> (Baki: ${baki} sesi lagi).`;
+                }
+            }
+        }
+
+        // Formula kiraan peratus mesyuarat berasaskan 7 kali
+        function calculateMeetingPercentageVal(count) {
+            if (count >= 7) return 100;
+            if (count <= 0) return 0;
+            // 7 kali: 1 -> 14%, 2 -> 29%, 3 -> 43%, 4 -> 57%, 5 -> 71%, 6 -> 86%, 7 -> 100%
+            return Math.round((count / 7) * 100);
+        }
+
+        // Apabila Nama Kerja dipilih: Semak jika ada rekod wujud untuk auto-fill
         function handleKerjaChange() {
             const unit = document.getElementById('unit-select').value;
             const skop = document.getElementById('skop-select').value;
@@ -672,41 +937,97 @@
 
             if (!unit || !skop || !kerja) return;
 
-            // Cari jika rekod telah wujud dalam senarai sesi / Google Sheet
+            // Auto-detect sama ada kerja atau skop berkaitan dengan mesyuarat
+            const isMeetingTask = checkIsMeetingText(kerja) || checkIsMeetingText(skop);
+            setMeetingMode(isMeetingTask);
+
             const existingRecord = currentSessionRecords.find(item => 
                 item.unit.trim().toLowerCase() === unit.trim().toLowerCase() &&
                 item.skop.trim().toLowerCase() === skop.trim().toLowerCase() &&
                 item.kerja.trim().toLowerCase() === kerja.trim().toLowerCase()
             );
 
+            const dateStartInput = document.getElementById('date-start');
+            const dateEndInput = document.getElementById('date-end');
+            const tickPaperwork = document.getElementById('tick-paperwork');
+            const tickBroadcast = document.getElementById('tick-broadcast');
+            const tickExecution = document.getElementById('tick-execution');
+
             if (existingRecord) {
-                // Isi borang dengan nilai yang sedia ada untuk dikemas kini
-                if (existingRecord.tarikhMula && existingRecord.tarikhMula !== '-') {
-                    document.getElementById('date-start').value = existingRecord.tarikhMula;
-                }
-                if (existingRecord.tarikhAkhir && existingRecord.tarikhAkhir !== '-') {
-                    document.getElementById('date-end').value = existingRecord.tarikhAkhir;
-                }
+                // Isikan tarikh
+                dateStartInput.value = (existingRecord.tarikhMula && existingRecord.tarikhMula !== '-') ? normalizeDateString(existingRecord.tarikhMula) : new Date().toISOString().split('T')[0];
+                dateEndInput.value = (existingRecord.tarikhAkhir && existingRecord.tarikhAkhir !== '-') ? normalizeDateString(existingRecord.tarikhAkhir) : "";
+
                 calculateDueDate();
 
-                // Parsing nilai peratusan (contoh: "40%" -> 40)
-                const percentNum = parseInt(existingRecord.peratus) || 0;
-                
-                // Setkan checkbox mengikut kombinasi peratus
-                document.getElementById('tick-paperwork').checked = (percentNum === 40 || percentNum === 60 || percentNum === 80 || percentNum === 100);
-                document.getElementById('tick-broadcast').checked = (percentNum === 20 || percentNum === 60 || percentNum === 100);
-                document.getElementById('tick-execution').checked = (percentNum >= 40 && (percentNum === 40 && !document.getElementById('tick-paperwork').checked || percentNum === 80 || percentNum === 100));
+                const percentNum = parseInt(String(existingRecord.peratus).replace(/[^0-9]/g, '')) || 0;
+
+                // Jika rekod mempunyai bilangan mesyuarat atau ini tugasan mesyuarat
+                if (existingRecord.meetingCount !== undefined && existingRecord.meetingCount !== null) {
+                    setMeetingMode(true);
+                    setMeetingCount(Number(existingRecord.meetingCount));
+                } else if (isMeetingMode) {
+                    // Kira balik anggaran bilangan mesyuarat daripada peratus
+                    const estimatedCount = Math.round((percentNum / 100) * 7);
+                    setMeetingCount(estimatedCount);
+                } else {
+                    // Kemas kini checkboxes standard mengikut nilai peratus
+                    tickPaperwork.checked = false;
+                    tickBroadcast.checked = false;
+                    tickExecution.checked = false;
+
+                    if (percentNum === 100) {
+                        tickPaperwork.checked = true;
+                        tickBroadcast.checked = true;
+                        tickExecution.checked = true;
+                    } else if (percentNum === 80) {
+                        tickPaperwork.checked = true;
+                        tickExecution.checked = true;
+                    } else if (percentNum === 60) {
+                        tickPaperwork.checked = true;
+                        tickBroadcast.checked = true;
+                    } else if (percentNum === 40) {
+                        tickPaperwork.checked = true;
+                    } else if (percentNum === 20) {
+                        tickBroadcast.checked = true;
+                    }
+                }
 
                 calculatePercentage();
-
                 btnSaveText.innerText = "Kemaskini Rekod Sedia Ada (Cloud)";
-                showToast(`Data sedia ada dikesan. Borang sedia untuk dikemaskini.`, "info");
+                showToast(`Data sedia ada dimuatkan ke borang.`, "info");
             } else {
                 btnSaveText.innerText = "Simpan & Hantar ke Cloud Google Sheet";
+                if (!dateStartInput.value) dateStartInput.value = new Date().toISOString().split('T')[0];
+                dateEndInput.value = "";
+                
+                tickPaperwork.checked = false;
+                tickBroadcast.checked = false;
+                tickExecution.checked = false;
+                setMeetingCount(0);
+
+                calculateDueDate();
+                calculatePercentage();
             }
         }
 
-        // Pengiraan Tempoh Due Date
+        // Helper format tarikh ke YYYY-MM-DD
+        function normalizeDateString(dateVal) {
+            if (!dateVal) return "";
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) return dateVal;
+            if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateVal)) {
+                const parts = dateVal.split('/');
+                const day = parts[0].padStart(2, '0');
+                const month = parts[1].padStart(2, '0');
+                const year = parts[2];
+                return `${year}-${month}-${day}`;
+            }
+            const d = new Date(dateVal);
+            if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+            return "";
+        }
+
+        // Pengiraan Tempoh Baki / Hari
         function calculateDueDate() {
             const startVal = document.getElementById('date-start').value;
             const endVal = document.getElementById('date-end').value;
@@ -728,7 +1049,7 @@
                 badge.innerText = "Ralat: Tarikh tamat sebelum tarikh mula";
                 badge.className = "font-bold text-rose-600";
             } else if (diffDays === 0) {
-                badge.innerText = "Hari yang sama (Hari ini)";
+                badge.innerText = "Hari yang sama (1 Hari)";
                 badge.className = "font-bold text-amber-600";
             } else {
                 badge.innerText = `${diffDays} Hari Tempoh Masa`;
@@ -736,30 +1057,36 @@
             }
         }
 
-        // Pengiraan Peratusan Berdasarkan Multiple Tick
+        // Pengiraan Peratusan Berdasarkan Mod (Mesyuarat vs Multiple Tick Standard)
         function calculatePercentage() {
-            const tick1 = document.getElementById('tick-paperwork').checked ? 40 : 0;
-            const tick2 = document.getElementById('tick-broadcast').checked ? 20 : 0;
-            const tick3 = document.getElementById('tick-execution').checked ? 40 : 0;
+            let total = 0;
 
-            const total = tick1 + tick2 + tick3;
-            
-            const percentDisplay = document.getElementById('percentage-display');
-            percentDisplay.innerText = `${total}%`;
-
-            if (total === 100) {
-                percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
-            } else if (total > 0) {
-                percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800";
+            if (isMeetingMode) {
+                total = calculateMeetingPercentageVal(currentMeetingCount);
             } else {
-                percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-800";
+                const tick1 = document.getElementById('tick-paperwork').checked ? 40 : 0;
+                const tick2 = document.getElementById('tick-broadcast').checked ? 20 : 0;
+                const tick3 = document.getElementById('tick-execution').checked ? 40 : 0;
+                total = tick1 + tick2 + tick3;
+            }
+
+            const percentDisplay = document.getElementById('percentage-display');
+            if (percentDisplay) {
+                percentDisplay.innerText = `${total}%`;
+                if (total === 100) {
+                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+                } else if (total > 0) {
+                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800";
+                } else {
+                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-800";
+                }
             }
 
             updateStatusDisplay(total);
             return total;
         }
 
-        // Menentukan Status Mengikut Peratusan Automatik
+        // Kemas kini Paparan Status Automatik
         function updateStatusDisplay(percentage) {
             const statusContainer = document.getElementById('status-container');
             const statusText = document.getElementById('status-text');
@@ -790,7 +1117,7 @@
             return statusName;
         }
 
-        // Simpan Data Borang
+        // Hantar dan Simpan Data Borang
         async function handleFormSubmit(event) {
             event.preventDefault();
 
@@ -804,19 +1131,16 @@
                 showToast("Sila pilih unit jabatan terlebih dahulu!", "error");
                 return;
             }
-
             if (!skop) {
                 showToast("Sila pilih skop kerja daripada senarai!", "error");
                 return;
             }
-
             if (!kerja) {
                 showToast("Sila pilih nama/deskripsi kerja!", "error");
                 return;
             }
-
             if (new Date(tarikhAkhir) < new Date(tarikhMula)) {
-                showToast("Tarikh tamat mestilah selepas tarikh mula!", "error");
+                showToast("Tarikh tamat mestilah selepas atau sama dengan tarikh mula!", "error");
                 return;
             }
 
@@ -825,7 +1149,7 @@
             if (peratus >= 1 && peratus < 100) statusText = "Dalam Tindakan";
             if (peratus === 100) statusText = "Selesai";
 
-            const diffDays = Math.ceil((new Date(tarikhAkhir) - new Date(tarikhMula)) / (1000 * 60 * 60 * 24));
+            const diffDays = Math.max(0, Math.ceil((new Date(tarikhAkhir) - new Date(tarikhMula)) / (1000 * 60 * 60 * 24)));
             const tempohDue = `${diffDays} Hari`;
 
             const recordItem = {
@@ -838,10 +1162,11 @@
                 tempohDue: tempohDue,
                 peratus: `${peratus}%`,
                 status: statusText,
+                isMeeting: isMeetingMode,
+                meetingCount: isMeetingMode ? currentMeetingCount : null,
                 timestamp: new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' })
             };
 
-            // Semak jika rekod sudah wujud dalam senarai sesi
             const existingIndex = currentSessionRecords.findIndex(item =>
                 item.unit.trim().toLowerCase() === unit.trim().toLowerCase() &&
                 item.skop.trim().toLowerCase() === skop.trim().toLowerCase() &&
@@ -855,72 +1180,100 @@
                 showToast(`Rekod sedia ada "${kerja}" telah dikemaskini.`, "success");
             } else {
                 currentSessionRecords.unshift(recordItem);
-                showToast(`Rekod baharu berjaya disimpan pada sesi ini!`, "success");
+                showToast(`Rekod baharu berjaya disimpan.`, "success");
             }
 
+            saveLocalRecords();
             renderRecordsTable();
 
-            // Hantar ke Google Sheet jika webhook telah dikonfigurasi
+            // Autosync ke Google Sheet
             if (webhookUrl) {
                 await syncToGoogleSheet(recordItem, isUpdate);
-            } else {
-                showToast("Data disimpan secara lokal (Sila masukkan URL Webhook untuk autosync ke Cloud).", "info");
             }
 
-            // Kembalikan teks butang simpan ke mod lalai
+            // Kembalikan teks butang
             document.getElementById('btn-save-text').innerText = "Simpan & Hantar ke Cloud Google Sheet";
-
-            // RESET SEMUA RUANGAN BORANG UNTUK SEDIA DIISI MAKLUMAT LAIN
             resetWorkForm();
         }
 
-        // Fungsi Reset Borang Pengisian Kerja
+        // Set Semula Borang
         function resetWorkForm() {
-            // 1. Reset Pilihan Unit
             const unitSelect = document.getElementById('unit-select');
             if (unitSelect) unitSelect.value = "";
 
-            // 2. Reset Pilihan Skop Kerja
             const skopSelect = document.getElementById('skop-select');
-            if (skopSelect) {
-                skopSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit Dahulu --</option>`;
-            }
+            if (skopSelect) skopSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit Dahulu --</option>`;
 
-            // 3. Reset Pilihan Nama Kerja
             const kerjaSelect = document.getElementById('kerja-select');
-            if (kerjaSelect) {
-                kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>`;
-            }
+            if (kerjaSelect) kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>`;
 
-            // 4. Reset Tarikh Mula & Tamat
             const dateStart = document.getElementById('date-start');
             const dateEnd = document.getElementById('date-end');
-            if (dateStart) dateStart.value = "";
+            if (dateStart) dateStart.value = new Date().toISOString().split('T')[0];
             if (dateEnd) dateEnd.value = "";
 
-            // 5. Reset Due Date Badge
             const dueDateBadge = document.getElementById('due-date-badge');
             if (dueDateBadge) {
                 dueDateBadge.innerText = "Sila pilih tarikh";
                 dueDateBadge.className = "font-bold text-slate-800";
             }
 
-            // 6. Reset Checkbox Kemajuan (Multiple Tick)
-            const tick1 = document.getElementById('tick-paperwork');
-            const tick2 = document.getElementById('tick-broadcast');
-            const tick3 = document.getElementById('tick-execution');
-            if (tick1) tick1.checked = false;
-            if (tick2) tick2.checked = false;
-            if (tick3) tick3.checked = false;
+            document.getElementById('tick-paperwork').checked = false;
+            document.getElementById('tick-broadcast').checked = false;
+            document.getElementById('tick-execution').checked = false;
 
-            // 7. Reset Peratusan & Status
+            // Reset mod mesyuarat
+            setMeetingCount(0);
+            setMeetingMode(false);
+
+            document.getElementById('btn-save-text').innerText = "Simpan & Hantar ke Cloud Google Sheet";
+
             calculatePercentage();
-
-            // 8. Kemas kini jadual semula ke mod tanpa tapisan (papar semua rekod sesi semasa)
             renderRecordsTable(true);
         }
 
-        // Paparkan Rekod Sesi Semasa ke Jadual (Auto-filtered mengikut Unit & Skop yang dipilih)
+        // Helper Memastikan Format Peratusan Seragam & Mengendalikan Format Perpuluhan Google Sheets (cth: 0.6 -> 60%)
+        function parsePercentageValue(val) {
+            if (val === undefined || val === null || val === '') return 0;
+            
+            // Jika ia sudah nombor tulen
+            if (typeof val === 'number') {
+                if (val > 0 && val <= 1) {
+                    return Math.round(val * 100);
+                }
+                return Math.max(0, Math.min(100, Math.round(val)));
+            }
+
+            const strVal = String(val).trim();
+            
+            // Jika rentetan mengandungi simbol %, ekstrak nombor sebelum %
+            if (strVal.includes('%')) {
+                const match = strVal.match(/(\d+(?:\.\d+)?)/);
+                if (match) {
+                    const parsed = parseFloat(match[1]);
+                    return Math.max(0, Math.min(100, Math.round(parsed)));
+                }
+            }
+
+            // Jika rentetan nombor perpuluhan seperti "0.6" atau "0.60" dari Google Sheets
+            const parsedFloat = parseFloat(strVal);
+            if (!isNaN(parsedFloat)) {
+                if (parsedFloat > 0 && parsedFloat <= 1) {
+                    return Math.round(parsedFloat * 100);
+                }
+                return Math.max(0, Math.min(100, Math.round(parsedFloat)));
+            }
+
+            return 0;
+        }
+
+        // Helper Memastikan Format Paparan Peratusan Seragam (0% - 100%)
+        function formatPercentageFixed(val) {
+            const num = parsePercentageValue(val);
+            return `${num}%`;
+        }
+
+        // Paparkan Rekod ke Jadual dengan sokongan tapisan & carian
         function renderRecordsTable(ignoreFilter = false) {
             const tbody = document.getElementById('session-records-body');
             const countBadge = document.getElementById('record-count-badge');
@@ -935,7 +1288,7 @@
 
             let filteredRecords = [...currentSessionRecords];
 
-            // Tentukan status tapisan
+            // 1. Tapisan dropdown unit/skop
             if (!ignoreFilter && (selectedUnit || selectedSkop)) {
                 if (btnResetFilter) btnResetFilter.classList.remove('hidden');
 
@@ -956,14 +1309,27 @@
                 if (filterLabel) filterLabel.textContent = "Semua Rekod (Tiada Tapisan)";
             }
 
+            // 2. Tapisan carian teks (jika ditaip)
+            if (searchQuery.trim() !== "") {
+                const query = searchQuery.trim().toLowerCase();
+                filteredRecords = filteredRecords.filter(item => 
+                    item.kerja.toLowerCase().includes(query) ||
+                    item.unit.toLowerCase().includes(query) ||
+                    item.skop.toLowerCase().includes(query) ||
+                    item.status.toLowerCase().includes(query)
+                );
+            }
+
             countBadge.innerText = `${filteredRecords.length} / ${currentSessionRecords.length} Rekod`;
 
             if (filteredRecords.length === 0) {
-                let emptyMsg = "Belum ada rekod kerja yang diisi pada sesi ini.";
-                if (selectedUnit && selectedSkop) {
+                let emptyMsg = "Belum ada rekod kerja yang diisi.";
+                if (searchQuery.trim() !== "") {
+                    emptyMsg = `Tiada rekod sepadan dengan carian: <b>"${escapeHtml(searchQuery)}"</b>.`;
+                } else if (selectedUnit && selectedSkop) {
                     emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b> di bawah skop <b>${escapeHtml(selectedSkop)}</b>.`;
                 } else if (selectedUnit) {
-                    emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b>. Sila isi borang di sebelah kiri.`;
+                    emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b>.`;
                 }
 
                 tbody.innerHTML = `
@@ -981,21 +1347,33 @@
             filteredRecords.forEach(item => {
                 let statusBadge = "";
                 if (item.status === "Selesai") {
-                    statusBadge = '<span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Selesai</span>';
+                    statusBadge = '<span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Selesai</span>';
                 } else if (item.status === "Dalam Tindakan") {
-                    statusBadge = '<span class="inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Tindakan</span>';
+                    statusBadge = '<span class="inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Tindakan</span>';
                 } else {
-                    statusBadge = '<span class="inline-block bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Belum Mula</span>';
+                    statusBadge = '<span class="inline-block bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Belum Mula</span>';
                 }
+
+                const fixedPercentage = formatPercentageFixed(item.peratus);
+
+                // Label tambahan jika tugasan berasaskan mesyuarat
+                const isMeetingItem = item.isMeeting || checkIsMeetingText(item.kerja) || checkIsMeetingText(item.skop);
+                const meetingBadge = isMeetingItem ? `
+                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100">
+                        <i class="fa-solid fa-users-rectangle text-[9px]"></i> ${item.meetingCount !== null && item.meetingCount !== undefined ? item.meetingCount : Math.round((parseInt(fixedPercentage)/100)*7)}/7 Mesyuarat
+                    </span>` : '';
 
                 html += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100 align-top">
-                        <!-- Ruang Kerja & Unit (Lebar 44% dengan word break) -->
+                        <!-- Ruang Kerja & Unit -->
                         <td class="py-2.5 px-3 break-words">
-                            <div class="font-semibold text-slate-900 leading-snug">${escapeHtml(item.kerja)}</div>
+                            <div class="font-semibold text-slate-900 leading-snug flex flex-wrap items-center gap-1.5">
+                                <span>${escapeHtml(item.kerja)}</span>
+                                ${meetingBadge}
+                            </div>
                             <div class="text-[11px] text-slate-500 mt-0.5 leading-tight">${escapeHtml(item.unit)} &bull; <span class="text-slate-400">${escapeHtml(item.skop)}</span></div>
                         </td>
-                        <!-- Tarikh Mula & Tamat (22% disusun atas-bawah kemas) -->
+                        <!-- Tarikh Mula & Tamat -->
                         <td class="py-2.5 px-2 text-[11px] text-slate-600">
                             <div class="flex items-center gap-1 font-mono text-[10.5px]">
                                 <span class="text-slate-400 text-[9px] uppercase font-sans">M:</span> ${item.tarikhMula}
@@ -1004,17 +1382,17 @@
                                 <span class="text-slate-400 text-[9px] uppercase font-sans">T:</span> ${item.tarikhAkhir}
                             </div>
                         </td>
-                        <!-- Tempoh Masa (12%) -->
+                        <!-- Tempoh Masa -->
                         <td class="py-2.5 px-2 text-center text-slate-600">
                             <span class="inline-block font-semibold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10.5px] leading-tight">
-                                ${item.tempohDue}
+                                ${escapeHtml(item.tempohDue)}
                             </span>
                         </td>
-                        <!-- Peratusan (10%) -->
-                        <td class="py-2.5 px-1 text-center font-bold text-slate-800 text-xs">
-                            ${item.peratus}
+                        <!-- Peratusan -->
+                        <td class="py-2.5 px-1 text-center font-bold text-slate-800 text-xs font-mono">
+                            ${fixedPercentage}
                         </td>
-                        <!-- Status (12%) -->
+                        <!-- Status -->
                         <td class="py-2.5 px-2 text-right">
                             ${statusBadge}
                         </td>
@@ -1025,13 +1403,32 @@
             tbody.innerHTML = html;
         }
 
-        // Tetapkan semula paparan kepada semua rekod tanpa tapisan
-        function resetTableFilter() {
-            renderRecordsTable(true);
-            showToast("Memaparkan semua rekod sesi semasa.", "info");
+        // Carian Masa Nyata
+        function handleSearch() {
+            const input = document.getElementById('table-search-input');
+            searchQuery = input ? input.value : "";
+            renderRecordsTable();
         }
 
-        // Hantar Data ke Webhook Google Sheets
+        // Tetapkan semula tapisan
+        function resetTableFilter() {
+            const searchInput = document.getElementById('table-search-input');
+            if (searchInput) searchInput.value = "";
+            searchQuery = "";
+            renderRecordsTable(true);
+            showToast("Memaparkan semua rekod tanpa tapisan.", "info");
+        }
+
+        // Kosongkan rekod sesi
+        function clearCurrentSessionRecords() {
+            if (currentSessionRecords.length === 0) return;
+            currentSessionRecords = [];
+            saveLocalRecords();
+            renderRecordsTable();
+            showToast("Senarai paparan sesi semasa telah dikosongkan.", "info");
+        }
+
+        // Hantar Data ke Google Sheets Webhook
         async function syncToGoogleSheet(record, isUpdate = false) {
             const btnSave = document.getElementById('btn-save');
             const originalText = btnSave.innerHTML;
@@ -1039,6 +1436,7 @@
             btnSave.disabled = true;
 
             try {
+                // Sertakan maklumat bilangan mesyuarat jika berkaitan
                 const payload = {
                     action: "upsertWork",
                     data: {
@@ -1048,21 +1446,23 @@
                         tarikhMula: record.tarikhMula,
                         tarikhAkhir: record.tarikhAkhir,
                         peratus: record.peratus,
-                        status: record.status
+                        status: record.status,
+                        nota: record.isMeeting ? `Mesyuarat: ${record.meetingCount}/7 kali dijalankan` : ''
                     }
                 };
 
                 await fetch(webhookUrl, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
 
-                showToast(isUpdate ? "Berjaya! Baris sedia ada di Google Sheet telah dikemaskini." : "Berjaya! Rekod baharu ditambah ke Google Sheet.", "success");
+                showToast(isUpdate ? "Berjaya! Google Sheet telah dikemaskini." : "Berjaya! Rekod baharu ditambah ke Google Sheet.", "success");
             } catch (error) {
                 console.error("Ralat simpan ke cloud:", error);
-                showToast("Ralat menghubungi Google Sheet. Semak Webhook URL.", "error");
+                showToast("Ralat menghubungi Google Sheet.", "error");
             } finally {
                 btnSave.innerHTML = originalText;
                 btnSave.disabled = false;
@@ -1072,137 +1472,204 @@
         // Tarik Data (Sync Dua Hala) dari Google Sheets
         async function fetchSheetData() {
             if (!webhookUrl) {
-                showToast("Sila masukkan URL Webhook Google Sheet dahulu!", "error");
+                showToast("URL Webhook tidak ditemui!", "error");
                 return;
             }
 
-            showToast("Menarik data langsung dari Google Sheet...", "info");
-            try {
-                const fetchUrl = `${webhookUrl}?action=getWorks&t=${new Date().getTime()}`;
-                const res = await fetch(fetchUrl);
-                const result = await res.json();
+            const btnSync = document.getElementById('btn-sync-live');
+            const syncIcon = document.getElementById('sync-icon');
+            const syncText = document.getElementById('sync-text');
 
-                if (result && result.status === 'success' && Array.isArray(result.data)) {
-                    // 1. Kemas kini rekod paparan jadual
-                    currentSessionRecords = result.data.map((row, idx) => ({
+            if (syncIcon) syncIcon.classList.add('fa-spin');
+            if (syncText) syncText.textContent = "Menyegerak...";
+            if (btnSync) btnSync.disabled = true;
+
+            showToast("Menyegerakkan data terkini daripada Google Sheet...", "info");
+
+            try {
+                const cacheBuster = `t=${Date.now()}`;
+                const fetchUrl = `${webhookUrl}${webhookUrl.includes('?') ? '&' : '?'}action=getWorks&${cacheBuster}`;
+
+                const res = await fetch(fetchUrl, {
+                    method: 'GET',
+                    mode: 'cors',
+                    redirect: 'follow',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+
+                const result = await res.json();
+                processFetchedData(result);
+            } catch (fetchErr) {
+                console.warn("Fetch terus disekat oleh pelayar (CORS/file://), beralih ke mod JSONP...", fetchErr);
+                try {
+                    await fetchViaJsonp();
+                } catch (jsonpErr) {
+                    console.error("Fetch & JSONP gagal:", jsonpErr);
+                    showToast("Tidak dapat menyegerak dengan Google Sheet secara langsung.", "error");
+                }
+            } finally {
+                if (syncIcon) syncIcon.classList.remove('fa-spin');
+                if (syncText) syncText.textContent = "Sync Live Google Sheet";
+                if (btnSync) btnSync.disabled = false;
+            }
+        }
+
+        // Sandaran JSONP jika fail dibuka secara tempatan (file:///)
+        function fetchViaJsonp() {
+            return new Promise((resolve, reject) => {
+                const callbackName = 'googleSheetCallback_' + Date.now();
+                const timeoutId = setTimeout(() => {
+                    cleanup();
+                    reject(new Error("Masa tamat sambungan Google Sheet (Timeout)."));
+                }, 12000);
+
+                function cleanup() {
+                    if (window[callbackName]) delete window[callbackName];
+                    const scriptTag = document.getElementById(callbackName);
+                    if (scriptTag && scriptTag.parentNode) scriptTag.parentNode.removeChild(scriptTag);
+                    clearTimeout(timeoutId);
+                }
+
+                window[callbackName] = function(data) {
+                    cleanup();
+                    processFetchedData(data);
+                    resolve(data);
+                };
+
+                const script = document.createElement('script');
+                script.id = callbackName;
+                script.src = `${webhookUrl}${webhookUrl.includes('?') ? '&' : '?'}action=getWorks&callback=${callbackName}&t=${Date.now()}`;
+                script.onerror = function() {
+                    cleanup();
+                    reject(new Error("Ralat sambungan skrip JSONP."));
+                };
+                document.body.appendChild(script);
+            });
+        }
+
+        // Memproses Data daripada Google Sheet
+        function processFetchedData(result) {
+            if (result && result.status === 'success' && Array.isArray(result.data)) {
+                currentSessionRecords = result.data.map((row, idx) => {
+                    const nama = row.namaKerja || row[0] || 'Tugasan';
+                    const skop = row.skopKerja || row[2] || 'Skop Am';
+                    const peratusRaw = row.peratus !== undefined && row.peratus !== null ? row.peratus : (row[5] !== undefined ? row[5] : '0%');
+                    
+                    // Gunakan pengurai tepat untuk mengelak 0.6 menjadi 6%
+                    const percentNum = parsePercentageValue(peratusRaw);
+                    const peratusFormatted = `${percentNum}%`;
+
+                    const isMeet = checkIsMeetingText(nama) || checkIsMeetingText(skop);
+                    const countMeet = isMeet ? Math.min(7, Math.round((percentNum / 100) * 7)) : null;
+
+                    return {
                         id: Date.now() + idx,
-                        kerja: row.namaKerja || row[0] || 'Tugasan',
-                        unit: row.unit || row[1] || 'Unit Am',
-                        skop: row.skopKerja || row[2] || '-',
+                        kerja: nama,
+                        unit: row.unit || row[1] || 'Unit Pentadbiran & Sumber Manusia',
+                        skop: skop,
                         tarikhMula: row.tarikhMula || row[3] || '-',
                         tarikhAkhir: row.tarikhAkhir || row[4] || '-',
                         tempohDue: 'Live Sync',
-                        peratus: row.peratus || row[5] || '0%',
-                        status: row.status || row[6] || 'Belum Mula',
+                        peratus: peratusFormatted,
+                        status: row.status || row[6] || (percentNum === 100 ? 'Selesai' : (percentNum > 0 ? 'Dalam Tindakan' : 'Belum Mula')),
+                        isMeeting: isMeet,
+                        meetingCount: countMeet,
                         timestamp: 'Awan'
-                    }));
+                    };
+                });
 
-                    renderRecordsTable();
+                saveLocalRecords();
+                renderRecordsTable();
 
-                    // 2. Ekstrak data unik secara hierarki:
-                    // Unit (Kolum B) -> Skop (Kolum C) -> Senarai Nama Kerja (Kolum A)
-                    cloudUnitMapping = {};
-                    result.data.forEach(row => {
-                        const namaKerja = String(row.namaKerja || row[0] || '').trim();
-                        const unit = String(row.unit || row[1] || '').trim();
-                        const skop = String(row.skopKerja || row[2] || 'Skop Am').trim();
+                // Ekstrak hierarki unit & skop
+                cloudUnitMapping = {};
+                result.data.forEach(row => {
+                    const namaKerja = String(row.namaKerja || row[0] || '').trim();
+                    const unit = String(row.unit || row[1] || '').trim();
+                    const skop = String(row.skopKerja || row[2] || 'Skop Am').trim();
 
-                        if (unit) {
-                            if (!cloudUnitMapping[unit]) {
-                                cloudUnitMapping[unit] = {};
-                            }
-                            if (!cloudUnitMapping[unit][skop]) {
-                                cloudUnitMapping[unit][skop] = new Set();
-                            }
-                            if (namaKerja) {
-                                cloudUnitMapping[unit][skop].add(namaKerja);
-                            }
-                        }
-                    });
-
-                    // Tukar Set kepada Array bagi setiap skop
-                    Object.keys(cloudUnitMapping).forEach(unit => {
-                        Object.keys(cloudUnitMapping[unit]).forEach(skop => {
-                            cloudUnitMapping[unit][skop] = Array.from(cloudUnitMapping[unit][skop]);
-                        });
-                    });
-
-                    // 3. Kemas kini dropdown Unit (Kolum B) dengan data dari Google Sheet
-                    const sheetUnits = Object.keys(cloudUnitMapping);
-                    if (sheetUnits.length > 0) {
-                        const unitSelect = document.getElementById('unit-select');
-                        unitSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit (Daripada Google Sheet) --</option>`;
-                        sheetUnits.forEach(unitName => {
-                            const opt = document.createElement('option');
-                            opt.value = unitName;
-                            opt.textContent = unitName;
-                            unitSelect.appendChild(opt);
-                        });
-
-                        const badge = document.getElementById('unit-source-badge');
-                        if (badge) {
-                            badge.textContent = `Langkah 1 (${sheetUnits.length} Unit dari Google Sheet)`;
-                            badge.className = "text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium border border-emerald-200";
-                        }
+                    if (unit) {
+                        if (!cloudUnitMapping[unit]) cloudUnitMapping[unit] = {};
+                        if (!cloudUnitMapping[unit][skop]) cloudUnitMapping[unit][skop] = new Set();
+                        if (namaKerja) cloudUnitMapping[unit][skop].add(namaKerja);
                     }
+                });
 
-                    showToast(`Penyegerakan selesai! ${currentSessionRecords.length} data diterima dari Google Sheet.`, "success");
-                } else {
-                    showToast("Format respons Google Sheet tidak padan.", "error");
+                Object.keys(cloudUnitMapping).forEach(unit => {
+                    Object.keys(cloudUnitMapping[unit]).forEach(skop => {
+                        cloudUnitMapping[unit][skop] = Array.from(cloudUnitMapping[unit][skop]);
+                    });
+                });
+
+                const sheetUnits = Object.keys(cloudUnitMapping);
+                if (sheetUnits.length > 0) {
+                    const unitSelect = document.getElementById('unit-select');
+                    unitSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit (${sheetUnits.length} Unit Google Sheet) --</option>`;
+                    sheetUnits.forEach(unitName => {
+                        const opt = document.createElement('option');
+                        opt.value = unitName;
+                        opt.textContent = unitName;
+                        unitSelect.appendChild(opt);
+                    });
+
+                    const badge = document.getElementById('unit-source-badge');
+                    if (badge) {
+                        badge.textContent = `Langkah 1 (${sheetUnits.length} Unit dari Google Sheet)`;
+                        badge.className = "text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium border border-emerald-200";
+                    }
                 }
-            } catch (err) {
-                console.error("Sync Error:", err);
-                showToast("Gagal memuat turun data secara live. Pastikan skrip dideploy sebagai Web App (Anyone).", "error");
+
+                showToast(`Penyegerakan selesai! ${currentSessionRecords.length} rekod dikemaskini dari Awan.`, "success");
+            } else {
+                showToast("Penyegerakan berjaya namun tiada baris data ditemui.", "info");
             }
         }
 
-        // Simpan URL Webhook
-        function saveWebhookUrl() {
-            const input = document.getElementById('webhook-url-input').value.trim();
-            if (!input.startsWith('https://script.google.com/')) {
-                showToast("Sila masukkan URL Google Apps Script yang sah!", "error");
+        // Eksport Data ke CSV
+        function exportToCSV() {
+            if (currentSessionRecords.length === 0) {
+                showToast("Tiada rekod untuk dieksport!", "error");
                 return;
             }
-            webhookUrl = input;
-            sessionStorage.setItem('dept_webhook_url', webhookUrl);
-            showToast("Webhook Google Sheets berjaya disimpan!", "success");
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "Nama Kerja,Unit,Skop Kerja,Tarikh Mula,Tarikh Tamat,Tempoh,Peratusan,Status\n";
+
+            currentSessionRecords.forEach(r => {
+                const escapeCsv = (str) => `"${String(str || '').replace(/"/g, '""')}"`;
+                const row = [
+                    escapeCsv(r.kerja),
+                    escapeCsv(r.unit),
+                    escapeCsv(r.skop),
+                    escapeCsv(r.tarikhMula),
+                    escapeCsv(r.tarikhAkhir),
+                    escapeCsv(r.tempohDue),
+                    escapeCsv(r.peratus),
+                    escapeCsv(r.status)
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Status_Kerja_Jabatan_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("Fail CSV berjaya dimuat turun!", "success");
         }
 
-        // Kosongkan rekod sesi
-        function clearCurrentSessionRecords() {
-            if (currentSessionRecords.length === 0) return;
-            currentSessionRecords = [];
-            renderRecordsTable();
-            showToast("Senarai paparan sesi semasa dikosongkan.", "info");
-        }
-
-        // Helper Escape HTML
+        // Escape HTML untuk mengelak XSS
         function escapeHtml(string) {
+            if (!string) return '';
             const div = document.createElement('div');
             div.innerText = string;
             return div.innerHTML;
         }
-
-        // Inisialisasi Aplikasi Semasa Dimuat
-        window.onload = function() {
-            // Semak session storage webhook jika ada
-            const savedWebhook = sessionStorage.getItem('dept_webhook_url');
-            if (savedWebhook) {
-                webhookUrl = savedWebhook;
-            }
-
-            // Semak session login
-            const loggedIn = sessionStorage.getItem('dept_auth_session');
-            if (loggedIn === 'logged_in') {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-            }
-
-            // Tetapkan tarikh hari ini sebagai lalai
-            const todayStr = new Date().toISOString().split('T')[0];
-            const dateStartInput = document.getElementById('date-start');
-            if (dateStartInput) dateStartInput.value = todayStr;
-        };
     </script>
 </body>
 </html>
