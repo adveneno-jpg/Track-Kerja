@@ -24,8 +24,51 @@
         <span id="toast-message" class="text-sm font-medium">Notifikasi</span>
     </div>
 
-    <!-- MAIN APP WRAPPER (TERUS DIPAPARKAN TANPA LOGIN) -->
-    <div id="main-app" class="min-h-screen flex flex-col">
+    <!-- SKRIN 1: LOGIN PETUGAS (SHA-256 SECURED) -->
+    <div id="login-screen" class="fixed inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 p-8 space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-900">Portal Petugas Jabatan</h1>
+                <p class="text-xs text-slate-500">Sila masukkan ID Pengguna & Kata Laluan untuk pengesahan</p>
+            </div>
+
+            <form id="login-form" class="space-y-4" onsubmit="handleLogin(event)">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">ID Petugas</label>
+                    <div class="relative">
+                        <i class="fa-regular fa-user absolute left-3.5 top-3.5 text-slate-400"></i>
+                        <input type="text" id="login-username" required placeholder="Contoh: petugas" 
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Kata Laluan</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-slate-400"></i>
+                        <input type="password" id="login-password" required placeholder="••••••••" 
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition">
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Disulitkan dengan SHA-256 (Lalai: <span class="font-mono text-slate-600">petugas123</span>)</p>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-blue-500/25 transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Log Masuk Sistem</span>
+                </button>
+            </form>
+
+            <div class="pt-4 border-t border-slate-100 text-center">
+                <span class="text-xs text-slate-400">Keselamatan Akses Tertutup Jabatan</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="main-app" class="hidden min-h-screen flex flex-col">
         <!-- HEADER UTAMA -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
@@ -40,6 +83,13 @@
                             Sistem Penyegerakan Berkelajuan Awan
                         </p>
                     </div>
+                </div>
+
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button onclick="handleLogout()" class="px-3.5 py-2 text-xs font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span>Keluar</span>
+                    </button>
                 </div>
             </div>
         </header>
@@ -56,13 +106,13 @@
                         </div>
                         <div>
                             <h3 class="text-sm font-bold text-slate-900">Penyegerakan Google Sheets (Dua Hala)</h3>
-                            <p class="text-xs text-slate-500">Menyokong pembukaan terus dari komputer (Local/File) & Awan tanpa ralat CORS.</p>
+                            <p class="text-xs text-slate-500">Klik butang Sync Live untuk menarik maklumat terkini dari pangkalan data Google Sheet.</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="fetchSheetData()" id="btn-sync-live" class="w-full sm:w-auto text-xs px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm shadow-indigo-600/20 transition flex items-center justify-center gap-2 whitespace-nowrap">
-                            <i class="fa-solid fa-rotate" id="sync-icon"></i>
-                            <span id="sync-text">Sync Live</span>
+                    <div class="flex items-center justify-end">
+                        <button onclick="fetchSheetData()" class="w-full sm:w-auto text-xs px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm shadow-indigo-600/20 transition flex items-center justify-center gap-2 whitespace-nowrap">
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>Sync Live</span>
                         </button>
                     </div>
                 </div>
@@ -434,17 +484,25 @@
         };
 
         // Kredensial Log Masuk Petugas:
-        // Nilai hash SHA-256 rasmi bagi perkataan "petugas123":
-        // 7b411d5167f2b96e95267bf0f6ff16358dbbdf70265ad445cf0154fbdbd572ec
+        // Hash SHA-256 perkataan: "petugas123"
         const VALID_CREDENTIALS = {
             username: "petugas",
-            passwordHash: "7b411d5167f2b96e95267bf0f6ff16358dbbdf70265ad445cf0154fbdbd572ec"
+            passwordHash: "2113d2ca92b7f17680876ce0ac46c1b7f2e306d8dc7062bd92bbfb6bf5e9418e"
         };
 
         // State Aplikasi
         let currentSessionRecords = [];
         let webhookUrl = "https://script.google.com/macros/s/AKfycbwYsmnqshbpqQsFKqwJHViwOSdc6XeTgoFglyM2lRmLYN4UC31H9YREWkmPbIrS8YiS/exec";
         let cloudUnitMapping = {};
+
+        // Fungsi Enkripsi SHA-256 menggunakan Web Crypto API
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
 
         // Tunjuk Notifikasi Toast
         function showToast(message, type = 'info') {
@@ -467,6 +525,52 @@
             setTimeout(() => {
                 toast.classList.add('translate-y-[-150%]', 'opacity-0');
             }, 3500);
+        }
+
+        // Pengendali Log Masuk Petugas
+        async function handleLogin(event) {
+            if (event) event.preventDefault();
+
+            const usernameInput = document.getElementById('login-username').value.trim();
+            const passwordInput = document.getElementById('login-password').value;
+
+            if (!usernameInput || !passwordInput) {
+                showToast("Sila lengkapkan ID Petugas dan Kata Laluan!", "error");
+                return;
+            }
+
+            try {
+                const hashedInput = await sha256(passwordInput);
+
+                if (usernameInput.toLowerCase() === VALID_CREDENTIALS.username && hashedInput === VALID_CREDENTIALS.passwordHash) {
+                    sessionStorage.setItem('dept_auth_session', 'logged_in');
+                    sessionStorage.setItem('dept_user', usernameInput);
+
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('main-app').classList.remove('hidden');
+
+                    showToast(`Log masuk berjaya! Selamat bertugas.`, "success");
+                } else {
+                    showToast("ID Petugas atau Kata Laluan tidak sah!", "error");
+                }
+            } catch (err) {
+                console.error("Ralat SHA-256:", err);
+                showToast("Ralat memproses kata laluan.", "error");
+            }
+        }
+
+        // Pengendali Log Keluar
+        function handleLogout() {
+            sessionStorage.removeItem('dept_auth_session');
+            sessionStorage.removeItem('dept_user');
+
+            document.getElementById('login-username').value = "";
+            document.getElementById('login-password').value = "";
+
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+
+            showToast("Anda telah berjaya log keluar dari sistem.", "info");
         }
 
         // Muat Data Unit (Auto-Load apabila Unit dipilih)
@@ -568,103 +672,38 @@
 
             if (!unit || !skop || !kerja) return;
 
-            // Cari padanan rekod yang disimpan sama ada daripada senarai sesi atau data Google Sheet
+            // Cari jika rekod telah wujud dalam senarai sesi / Google Sheet
             const existingRecord = currentSessionRecords.find(item => 
                 item.unit.trim().toLowerCase() === unit.trim().toLowerCase() &&
                 item.skop.trim().toLowerCase() === skop.trim().toLowerCase() &&
                 item.kerja.trim().toLowerCase() === kerja.trim().toLowerCase()
             );
 
-            // Elemen-elemen borang
-            const dateStartInput = document.getElementById('date-start');
-            const dateEndInput = document.getElementById('date-end');
-            const tickPaperwork = document.getElementById('tick-paperwork');
-            const tickBroadcast = document.getElementById('tick-broadcast');
-            const tickExecution = document.getElementById('tick-execution');
-
             if (existingRecord) {
-                // 1. Format & Isikan Tarikh Mula
-                if (existingRecord.tarikhMula && existingRecord.tarikhMula !== '-' && existingRecord.tarikhMula !== 'undefined') {
-                    dateStartInput.value = normalizeDateString(existingRecord.tarikhMula);
-                } else {
-                    dateStartInput.value = "";
+                // Isi borang dengan nilai yang sedia ada untuk dikemas kini
+                if (existingRecord.tarikhMula && existingRecord.tarikhMula !== '-') {
+                    document.getElementById('date-start').value = existingRecord.tarikhMula;
                 }
-
-                // 2. Format & Isikan Tarikh Tamat
-                if (existingRecord.tarikhAkhir && existingRecord.tarikhAkhir !== '-' && existingRecord.tarikhAkhir !== 'undefined') {
-                    dateEndInput.value = normalizeDateString(existingRecord.tarikhAkhir);
-                } else {
-                    dateEndInput.value = "";
+                if (existingRecord.tarikhAkhir && existingRecord.tarikhAkhir !== '-') {
+                    document.getElementById('date-end').value = existingRecord.tarikhAkhir;
                 }
-
-                // Kemas kini paparan Due Date
                 calculateDueDate();
 
-                // 3. Parsing & Pulihkan Peratusan & Status
+                // Parsing nilai peratusan (contoh: "40%" -> 40)
                 const percentNum = parseInt(existingRecord.peratus) || 0;
+                
+                // Setkan checkbox mengikut kombinasi peratus
+                document.getElementById('tick-paperwork').checked = (percentNum === 40 || percentNum === 60 || percentNum === 80 || percentNum === 100);
+                document.getElementById('tick-broadcast').checked = (percentNum === 20 || percentNum === 60 || percentNum === 100);
+                document.getElementById('tick-execution').checked = (percentNum >= 40 && (percentNum === 40 && !document.getElementById('tick-paperwork').checked || percentNum === 80 || percentNum === 100));
 
-                // Setkan checkbox komponen kemajuan berasaskan logik kombinasi (40%, 20%, 40%)
-                tickPaperwork.checked = false;
-                tickBroadcast.checked = false;
-                tickExecution.checked = false;
-
-                if (percentNum === 100) {
-                    tickPaperwork.checked = true;
-                    tickBroadcast.checked = true;
-                    tickExecution.checked = true;
-                } else if (percentNum === 80) {
-                    tickPaperwork.checked = true;
-                    tickExecution.checked = true;
-                } else if (percentNum === 60) {
-                    tickPaperwork.checked = true;
-                    tickBroadcast.checked = true;
-                } else if (percentNum === 40) {
-                    tickPaperwork.checked = true;
-                } else if (percentNum === 20) {
-                    tickBroadcast.checked = true;
-                }
-
-                // 4. Hitung & paparkan semula peratusan serta status tugasan automatik
                 calculatePercentage();
 
                 btnSaveText.innerText = "Kemaskini Rekod Sedia Ada (Cloud)";
-                showToast(`Data sedia ada bagi "${kerja}" telah dimuatkan ke borang.`, "success");
+                showToast(`Data sedia ada dikesan. Borang sedia untuk dikemaskini.`, "info");
             } else {
-                // Rekod baru (Belum ada isian sebelum ini)
                 btnSaveText.innerText = "Simpan & Hantar ke Cloud Google Sheet";
-                dateStartInput.value = new Date().toISOString().split('T')[0];
-                dateEndInput.value = "";
-                
-                tickPaperwork.checked = false;
-                tickBroadcast.checked = false;
-                tickExecution.checked = false;
-
-                calculateDueDate();
-                calculatePercentage();
             }
-        }
-
-        // Helper untuk memastikan format YYYY-MM-DD serasi dengan input date
-        function normalizeDateString(dateVal) {
-            if (!dateVal) return "";
-            // Jika format ISO / YYYY-MM-DD
-            if (/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
-                return dateVal;
-            }
-            // Jika format DD/MM/YYYY
-            if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateVal)) {
-                const parts = dateVal.split('/');
-                const day = parts[0].padStart(2, '0');
-                const month = parts[1].padStart(2, '0');
-                const year = parts[2];
-                return `${year}-${month}-${day}`;
-            }
-            // Percubaan Date constructor biasa
-            const d = new Date(dateVal);
-            if (!isNaN(d.getTime())) {
-                return d.toISOString().split('T')[0];
-            }
-            return "";
         }
 
         // Pengiraan Tempoh Due Date
@@ -1013,12 +1052,10 @@
                     }
                 };
 
-                // Gunakan mode no-cors untuk simpan bagi mengelak sekatan pelayar semasa dibuka dari fail tempatan (file:///)
                 await fetch(webhookUrl, {
                     method: 'POST',
                     mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(payload)
                 });
 
@@ -1032,161 +1069,103 @@
             }
         }
 
-        // Tarik Data (Sync Dua Hala) dari Google Sheets - Kalis CORS & Local file:///
+        // Tarik Data (Sync Dua Hala) dari Google Sheets
         async function fetchSheetData() {
             if (!webhookUrl) {
                 showToast("Sila masukkan URL Webhook Google Sheet dahulu!", "error");
                 return;
             }
 
-            const btnSync = document.getElementById('btn-sync-live');
-            const syncIcon = document.getElementById('sync-icon');
-            const syncText = document.getElementById('sync-text');
-
-            if (syncIcon) syncIcon.classList.add('fa-spin');
-            if (syncText) syncText.textContent = "Menyegerak...";
-            if (btnSync) btnSync.disabled = true;
-
             showToast("Menarik data langsung dari Google Sheet...", "info");
-
             try {
-                // Kaedah 1: Percubaan fetch standard dengan 'cors' & 'redirect: follow'
-                const cacheBuster = `t=${Date.now()}`;
-                const fetchUrl = `${webhookUrl}${webhookUrl.includes('?') ? '&' : '?'}action=getWorks&${cacheBuster}`;
-
-                const res = await fetch(fetchUrl, {
-                    method: 'GET',
-                    mode: 'cors',
-                    redirect: 'follow',
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                if (!res.ok) {
-                    throw new Error(`HTTP Error: ${res.status}`);
-                }
-
+                const fetchUrl = `${webhookUrl}?action=getWorks&t=${new Date().getTime()}`;
+                const res = await fetch(fetchUrl);
                 const result = await res.json();
-                processFetchedData(result);
-            } catch (fetchErr) {
-                console.warn("Fetch terus disekat oleh pelayar (CORS/file://), beralih ke mod sandaran JSONP...", fetchErr);
-                
-                // Kaedah 2 (Kalis Sekatan file:///): Sandaran automatik menggunakan teknik suntikan JSONP
-                try {
-                    await fetchViaJsonp();
-                } catch (jsonpErr) {
-                    console.error("Kedua-dua kaedah Fetch & JSONP gagal:", jsonpErr);
-                    showToast("Gagal menarik data dari Google Sheet. Sila pastikan Google Apps Script anda dideploy sebagai Web App (Who has access: Anyone).", "error");
+
+                if (result && result.status === 'success' && Array.isArray(result.data)) {
+                    // 1. Kemas kini rekod paparan jadual
+                    currentSessionRecords = result.data.map((row, idx) => ({
+                        id: Date.now() + idx,
+                        kerja: row.namaKerja || row[0] || 'Tugasan',
+                        unit: row.unit || row[1] || 'Unit Am',
+                        skop: row.skopKerja || row[2] || '-',
+                        tarikhMula: row.tarikhMula || row[3] || '-',
+                        tarikhAkhir: row.tarikhAkhir || row[4] || '-',
+                        tempohDue: 'Live Sync',
+                        peratus: row.peratus || row[5] || '0%',
+                        status: row.status || row[6] || 'Belum Mula',
+                        timestamp: 'Awan'
+                    }));
+
+                    renderRecordsTable();
+
+                    // 2. Ekstrak data unik secara hierarki:
+                    // Unit (Kolum B) -> Skop (Kolum C) -> Senarai Nama Kerja (Kolum A)
+                    cloudUnitMapping = {};
+                    result.data.forEach(row => {
+                        const namaKerja = String(row.namaKerja || row[0] || '').trim();
+                        const unit = String(row.unit || row[1] || '').trim();
+                        const skop = String(row.skopKerja || row[2] || 'Skop Am').trim();
+
+                        if (unit) {
+                            if (!cloudUnitMapping[unit]) {
+                                cloudUnitMapping[unit] = {};
+                            }
+                            if (!cloudUnitMapping[unit][skop]) {
+                                cloudUnitMapping[unit][skop] = new Set();
+                            }
+                            if (namaKerja) {
+                                cloudUnitMapping[unit][skop].add(namaKerja);
+                            }
+                        }
+                    });
+
+                    // Tukar Set kepada Array bagi setiap skop
+                    Object.keys(cloudUnitMapping).forEach(unit => {
+                        Object.keys(cloudUnitMapping[unit]).forEach(skop => {
+                            cloudUnitMapping[unit][skop] = Array.from(cloudUnitMapping[unit][skop]);
+                        });
+                    });
+
+                    // 3. Kemas kini dropdown Unit (Kolum B) dengan data dari Google Sheet
+                    const sheetUnits = Object.keys(cloudUnitMapping);
+                    if (sheetUnits.length > 0) {
+                        const unitSelect = document.getElementById('unit-select');
+                        unitSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit (Daripada Google Sheet) --</option>`;
+                        sheetUnits.forEach(unitName => {
+                            const opt = document.createElement('option');
+                            opt.value = unitName;
+                            opt.textContent = unitName;
+                            unitSelect.appendChild(opt);
+                        });
+
+                        const badge = document.getElementById('unit-source-badge');
+                        if (badge) {
+                            badge.textContent = `Langkah 1 (${sheetUnits.length} Unit dari Google Sheet)`;
+                            badge.className = "text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium border border-emerald-200";
+                        }
+                    }
+
+                    showToast(`Penyegerakan selesai! ${currentSessionRecords.length} data diterima dari Google Sheet.`, "success");
+                } else {
+                    showToast("Format respons Google Sheet tidak padan.", "error");
                 }
-            } finally {
-                if (syncIcon) syncIcon.classList.remove('fa-spin');
-                if (syncText) syncText.textContent = "Sync Live";
-                if (btnSync) btnSync.disabled = false;
+            } catch (err) {
+                console.error("Sync Error:", err);
+                showToast("Gagal memuat turun data secara live. Pastikan skrip dideploy sebagai Web App (Anyone).", "error");
             }
         }
 
-        // Fungsi Sandaran JSONP untuk pelayar yang menyekat fetch dari file:///
-        function fetchViaJsonp() {
-            return new Promise((resolve, reject) => {
-                const callbackName = 'googleSheetCallback_' + Date.now();
-                const timeoutId = setTimeout(() => {
-                    cleanup();
-                    reject(new Error("Masa tamat sambungan Google Sheet (Timeout)."));
-                }, 12000);
-
-                function cleanup() {
-                    if (window[callbackName]) delete window[callbackName];
-                    const scriptTag = document.getElementById(callbackName);
-                    if (scriptTag && scriptTag.parentNode) scriptTag.parentNode.removeChild(scriptTag);
-                    clearTimeout(timeoutId);
-                }
-
-                window[callbackName] = function(data) {
-                    cleanup();
-                    processFetchedData(data);
-                    resolve(data);
-                };
-
-                const script = document.createElement('script');
-                script.id = callbackName;
-                script.src = `${webhookUrl}${webhookUrl.includes('?') ? '&' : '?'}action=getWorks&callback=${callbackName}&t=${Date.now()}`;
-                script.onerror = function() {
-                    cleanup();
-                    reject(new Error("Ralat sambungan skrip JSONP."));
-                };
-                document.body.appendChild(script);
-            });
-        }
-
-        // Memproses data yang diterima daripada Google Sheet
-        function processFetchedData(result) {
-            if (result && result.status === 'success' && Array.isArray(result.data)) {
-                // 1. Kemas kini rekod paparan jadual
-                currentSessionRecords = result.data.map((row, idx) => ({
-                    id: Date.now() + idx,
-                    kerja: row.namaKerja || row[0] || 'Tugasan',
-                    unit: row.unit || row[1] || 'Unit Am',
-                    skop: row.skopKerja || row[2] || '-',
-                    tarikhMula: row.tarikhMula || row[3] || '-',
-                    tarikhAkhir: row.tarikhAkhir || row[4] || '-',
-                    tempohDue: 'Live Sync',
-                    peratus: row.peratus || row[5] || '0%',
-                    status: row.status || row[6] || 'Belum Mula',
-                    timestamp: 'Awan'
-                }));
-
-                renderRecordsTable();
-
-                // 2. Ekstrak data unik secara hierarki:
-                // Unit (Kolum B) -> Skop (Kolum C) -> Senarai Nama Kerja (Kolum A)
-                cloudUnitMapping = {};
-                result.data.forEach(row => {
-                    const namaKerja = String(row.namaKerja || row[0] || '').trim();
-                    const unit = String(row.unit || row[1] || '').trim();
-                    const skop = String(row.skopKerja || row[2] || 'Skop Am').trim();
-
-                    if (unit) {
-                        if (!cloudUnitMapping[unit]) {
-                            cloudUnitMapping[unit] = {};
-                        }
-                        if (!cloudUnitMapping[unit][skop]) {
-                            cloudUnitMapping[unit][skop] = new Set();
-                        }
-                        if (namaKerja) {
-                            cloudUnitMapping[unit][skop].add(namaKerja);
-                        }
-                    }
-                });
-
-                // Tukar Set kepada Array bagi setiap skop
-                Object.keys(cloudUnitMapping).forEach(unit => {
-                    Object.keys(cloudUnitMapping[unit]).forEach(skop => {
-                        cloudUnitMapping[unit][skop] = Array.from(cloudUnitMapping[unit][skop]);
-                    });
-                });
-
-                // 3. Kemas kini dropdown Unit (Kolum B) dengan data dari Google Sheet
-                const sheetUnits = Object.keys(cloudUnitMapping);
-                if (sheetUnits.length > 0) {
-                    const unitSelect = document.getElementById('unit-select');
-                    unitSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit (Daripada Google Sheet) --</option>`;
-                    sheetUnits.forEach(unitName => {
-                        const opt = document.createElement('option');
-                        opt.value = unitName;
-                        opt.textContent = unitName;
-                        unitSelect.appendChild(opt);
-                    });
-
-                    const badge = document.getElementById('unit-source-badge');
-                    if (badge) {
-                        badge.textContent = `Langkah 1 (${sheetUnits.length} Unit dari Google Sheet)`;
-                        badge.className = "text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium border border-emerald-200";
-                    }
-                }
-
-                showToast(`Penyegerakan selesai! ${currentSessionRecords.length} data diterima dari Google Sheet.`, "success");
-            } else {
-                showToast("Format respons Google Sheet tidak padan atau kosong.", "error");
+        // Simpan URL Webhook
+        function saveWebhookUrl() {
+            const input = document.getElementById('webhook-url-input').value.trim();
+            if (!input.startsWith('https://script.google.com/')) {
+                showToast("Sila masukkan URL Google Apps Script yang sah!", "error");
+                return;
             }
+            webhookUrl = input;
+            sessionStorage.setItem('dept_webhook_url', webhookUrl);
+            showToast("Webhook Google Sheets berjaya disimpan!", "success");
         }
 
         // Kosongkan rekod sesi
@@ -1204,123 +1183,26 @@
             return div.innerHTML;
         }
 
-        // Helper Memastikan Format Peratusan Tetap & Sah (cth: "40%")
-        function formatPercentageFixed(val) {
-            if (val === undefined || val === null || val === '') return '0%';
-            // Buang sebarang simbol bukan digit jika ada
-            const num = parseInt(String(val).replace(/[^0-9]/g, ''), 10);
-            if (isNaN(num)) return '0%';
-            // Hadkan antara 0% hingga 100%
-            const clamped = Math.max(0, Math.min(100, num));
-            return `${clamped}%`;
-        }
-
-        // Paparkan Rekod Sesi Semasa ke Jadual (Auto-filtered mengikut Unit & Skop yang dipilih)
-        function renderRecordsTable(ignoreFilter = false) {
-            const tbody = document.getElementById('session-records-body');
-            const countBadge = document.getElementById('record-count-badge');
-            const filterLabel = document.getElementById('filter-active-label');
-            const btnResetFilter = document.getElementById('btn-reset-table-filter');
-
-            const unitSelect = document.getElementById('unit-select');
-            const skopSelect = document.getElementById('skop-select');
-
-            const selectedUnit = unitSelect ? unitSelect.value : "";
-            const selectedSkop = skopSelect ? skopSelect.value : "";
-
-            let filteredRecords = [...currentSessionRecords];
-
-            // Tentukan status tapisan
-            if (!ignoreFilter && (selectedUnit || selectedSkop)) {
-                if (btnResetFilter) btnResetFilter.classList.remove('hidden');
-
-                if (selectedUnit && selectedSkop) {
-                    filteredRecords = filteredRecords.filter(item => 
-                        item.unit.trim().toLowerCase() === selectedUnit.trim().toLowerCase() &&
-                        item.skop.trim().toLowerCase() === selectedSkop.trim().toLowerCase()
-                    );
-                    if (filterLabel) filterLabel.innerHTML = `<span class="text-blue-600 font-bold">${escapeHtml(selectedUnit)}</span> &rsaquo; <span class="text-slate-800 font-semibold">${escapeHtml(selectedSkop)}</span>`;
-                } else if (selectedUnit) {
-                    filteredRecords = filteredRecords.filter(item => 
-                        item.unit.trim().toLowerCase() === selectedUnit.trim().toLowerCase()
-                    );
-                    if (filterLabel) filterLabel.innerHTML = `<span class="text-blue-600 font-bold">${escapeHtml(selectedUnit)}</span> (Semua Skop)`;
-                }
-            } else {
-                if (btnResetFilter) btnResetFilter.classList.add('hidden');
-                if (filterLabel) filterLabel.textContent = "Semua Rekod (Tiada Tapisan)";
+        // Inisialisasi Aplikasi Semasa Dimuat
+        window.onload = function() {
+            // Semak session storage webhook jika ada
+            const savedWebhook = sessionStorage.getItem('dept_webhook_url');
+            if (savedWebhook) {
+                webhookUrl = savedWebhook;
             }
 
-            countBadge.innerText = `${filteredRecords.length} / ${currentSessionRecords.length} Rekod`;
-
-            if (filteredRecords.length === 0) {
-                let emptyMsg = "Belum ada rekod kerja yang diisi pada sesi ini.";
-                if (selectedUnit && selectedSkop) {
-                    emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b> di bawah skop <b>${escapeHtml(selectedSkop)}</b>.`;
-                } else if (selectedUnit) {
-                    emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b>. Sila isi borang di sebelah kiri.`;
-                }
-
-                tbody.innerHTML = `
-                    <tr id="empty-row">
-                        <td colspan="5" class="text-center py-12 text-slate-400">
-                            <i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>
-                            ${emptyMsg}
-                        </td>
-                    </tr>
-                `;
-                return;
+            // Semak session login
+            const loggedIn = sessionStorage.getItem('dept_auth_session');
+            if (loggedIn === 'logged_in') {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
             }
 
-            let html = "";
-            filteredRecords.forEach(item => {
-                let statusBadge = "";
-                if (item.status === "Selesai") {
-                    statusBadge = '<span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Selesai</span>';
-                } else if (item.status === "Dalam Tindakan") {
-                    statusBadge = '<span class="inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Tindakan</span>';
-                } else {
-                    statusBadge = '<span class="inline-block bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-tight text-center">Belum Mula</span>';
-                }
-
-                // Format kemajuan tetap dalam bentuk peratusan (0% - 100%)
-                const fixedPercentage = formatPercentageFixed(item.peratus);
-
-                html += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 align-top">
-                        <!-- Ruang Kerja & Unit (Lebar 44% dengan word break) -->
-                        <td class="py-2.5 px-3 break-words">
-                            <div class="font-semibold text-slate-900 leading-snug">${escapeHtml(item.kerja)}</div>
-                            <div class="text-[11px] text-slate-500 mt-0.5 leading-tight">${escapeHtml(item.unit)} &bull; <span class="text-slate-400">${escapeHtml(item.skop)}</span></div>
-                        </td>
-                        <!-- Tarikh Mula & Tamat (22% disusun atas-bawah kemas) -->
-                        <td class="py-2.5 px-2 text-[11px] text-slate-600">
-                            <div class="flex items-center gap-1 font-mono text-[10.5px]">
-                                <span class="text-slate-400 text-[9px] uppercase font-sans">M:</span> ${item.tarikhMula}
-                            </div>
-                            <div class="flex items-center gap-1 font-mono text-[10.5px] mt-0.5">
-                                <span class="text-slate-400 text-[9px] uppercase font-sans">T:</span> ${item.tarikhAkhir}
-                            </div>
-                        </td>
-                        <!-- Tempoh Masa (12%) -->
-                        <td class="py-2.5 px-2 text-center text-slate-600">
-                            <span class="inline-block font-semibold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10.5px] leading-tight">
-                                ${item.tempohDue}
-                            </span>
-                        </td>
-                        <!-- Peratusan (10% - Nilai Tetap & Seragam dalam format %) -->
-                        <td class="py-2.5 px-1 text-center font-bold text-slate-800 text-xs font-mono">
-                            ${fixedPercentage}
-                        </td>
-                        <!-- Status (12%) -->
-                        <td class="py-2.5 px-2 text-right">
-                            ${statusBadge}
-                        </td>
-                    </tr>
-                `;
-            });
-
-            tbody.innerHTML = html;
-        }
-
-        // Tetapkan semula paparan kepada semua rekod tanpa tapisan
+            // Tetapkan tarikh hari ini sebagai lalai
+            const todayStr = new Date().toISOString().split('T')[0];
+            const dateStartInput = document.getElementById('date-start');
+            if (dateStartInput) dateStartInput.value = todayStr;
+        };
+    </script>
+</body>
+</html>
