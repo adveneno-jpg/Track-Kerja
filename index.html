@@ -6,20 +6,28 @@
     <title>Sistem Pengesanan Status Kerja Jabatan</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Kustom scrollbar untuk paparan tema biru gelap */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        /* Pembetulan warna ikon kalendar input date pada tema gelap */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
         input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(0.85);
             cursor: pointer;
@@ -29,82 +37,84 @@
 <body class="bg-slate-950 min-h-screen text-slate-100 antialiased flex flex-col justify-between selection:bg-blue-600 selection:text-white">
 
     <!-- NOTIFIKASI TOAST -->
-    <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-150%] opacity-0 bg-slate-900/95 backdrop-blur-md border border-slate-700/70 text-slate-100 px-5 py-3.5 rounded-xl shadow-2xl shadow-black/60 flex items-center gap-3 pointer-events-none">
+    <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-150%] opacity-0 bg-slate-900/95 border border-slate-700/80 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 pointer-events-none backdrop-blur-md">
         <i id="toast-icon" class="fa-solid fa-circle-info text-blue-400"></i>
-        <span id="toast-message" class="text-sm font-medium">Notifikasi</span>
+        <span id="toast-message" class="text-xs sm:text-sm font-medium">Notifikasi Sistem</span>
     </div>
 
-    <!-- SKRIN KUNCI / LOG MASUK KATA LALUAN (SHA-256) - TEMA BIRU GELAP -->
-    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
-        <div class="bg-slate-900/90 rounded-2xl shadow-2xl border border-blue-900/40 max-w-sm w-full p-6 sm:p-7 space-y-5 animate-fade-in text-slate-100 shadow-blue-950/50">
-            <div class="text-center space-y-2">
-                <div class="w-14 h-14 bg-blue-950/70 text-blue-400 border border-blue-800/40 rounded-2xl mx-auto flex items-center justify-center text-2xl shadow-lg shadow-blue-950/60">
+    <!-- SKRIN KUNCI LOG MASUK (KATA LALUAN SHA-256) -->
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-blue-950/50 space-y-6 relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="text-center space-y-2 relative">
+                <div class="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-600 items-center justify-center text-white text-2xl shadow-lg shadow-blue-700/30 mb-2">
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <h2 class="text-base font-bold text-white tracking-wide">Akses Keselamatan Sistem</h2>
-                <p class="text-xs text-slate-400 leading-relaxed">Sila masukkan kata laluan untuk mengakses Pengesanan Status Kerja Jabatan.</p>
+                <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Portal Prestasi Kerja Pusat Islam</h1>
+                <p class="text-xs text-slate-400">Sila masukkan kata laluan keselamatan untuk mengakses sistem.</p>
             </div>
 
-            <form id="password-form" onsubmit="handlePasswordSubmit(event)" class="space-y-4">
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4 relative">
                 <div>
-                    <label for="system-password" class="block text-xs font-semibold text-slate-300 mb-1.5">
-                        Kata Laluan Akses:
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+                        <span><i class="fa-solid fa-key text-blue-400 mr-1.5"></i> Kata Laluan Akses</span>
+                        <span class="text-[10px] text-slate-500 font-mono">Pusat Islam</span>
                     </label>
                     <div class="relative">
-                        <input type="password" id="system-password" required placeholder="Masukkan kata laluan..."
-                            class="w-full text-sm pl-3.5 pr-10 py-2.5 rounded-xl border border-slate-700/80 bg-slate-950/80 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 transition">
-                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-400 focus:outline-none text-sm transition">
-                            <i id="pwd-eye-icon" class="fa-regular fa-eye"></i>
+                        <input type="password" id="auth-password-input" required autocomplete="current-password" placeholder="Masukkan kata laluan..."
+                            class="w-full text-sm px-4 py-3 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition pr-10">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200 transition" title="Papar/Sembunyi Kata Laluan">
+                            <i id="auth-eye-icon" class="fa-regular fa-eye text-sm"></i>
                         </button>
                     </div>
-                    <p id="password-error" class="hidden text-[11px] text-rose-400 font-semibold mt-1.5 flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle-exclamation"></i>
-                        <span>Kata laluan tidak sah! Sila cuba lagi.</span>
+                    <p id="auth-error-msg" class="text-rose-400 text-xs mt-1.5 hidden flex items-center gap-1.5 font-medium">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Kata laluan salah. Sila cuba lagi.</span>
                     </p>
                 </div>
 
-                <button type="submit" id="btn-submit-pwd"
-                    class="w-full bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-semibold py-2.5 rounded-xl shadow-lg shadow-blue-600/30 text-xs transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-lock-open text-xs"></i>
-                    <span>Sahkan &amp; Akses Sistem</span>
+                <button type="submit" id="btn-auth-submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2 active:scale-[0.99]">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>Log Masuk Sistem</span>
                 </button>
             </form>
 
-            <div class="text-center pt-2 border-t border-slate-800">
-                <p class="text-[10px] text-slate-400 flex items-center justify-center gap-1.5 font-medium">
-                    <i class="fa-solid fa-shield-check text-emerald-400"></i>
-                    Disulitkan dengan SHA-256 (Kerahsiaan Tinggi)
-                </p>
+            <div class="pt-4 border-t border-slate-800 text-center relative">
+                <span class="text-[11px] text-slate-500 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-lock text-slate-400"></i> Hubungi Admin untuk Password
+                </span>
             </div>
         </div>
     </div>
 
     <!-- MAIN APP WRAPPER -->
-    <div id="main-app" class="hidden min-h-screen flex flex-col bg-slate-950">
+    <div id="main-app" class="min-h-screen flex flex-col hidden">
         <!-- HEADER UTAMA -->
-        <header class="bg-slate-900/90 border-b border-slate-800/80 sticky top-0 z-30 backdrop-blur-md">
+        <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-30 shadow-md shadow-black/20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-lg shadow-blue-600/25 text-lg">
-                        <i class="fa-solid fa-list-check"></i>
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-lg shadow-blue-600/20">
+                        <i class="fa-solid fa-list-check text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-lg text-white leading-tight">Pelaksanaan Tugas dan Prestasi Kerja Pusat Islam</h1>
-                        <p class="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400 animate-pulse"></span>
-                            Sistem Pengurusan Tugasan
+                        <h2 class="font-bold text-base sm:text-lg text-white leading-tight">Pelaksanaan dan Prestasi Tugas Pusat Islam</h2>
+                        <p class="text-xs text-slate-400 flex items-center gap-1.5">
+                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            Sistem Secara Auto-Refresh &bull; Mod Gelap
                         </p>
                     </div>
                 </div>
-                <!-- Status Sambungan, Tarikh Semasa & Butang Log Keluar -->
-                <div class="flex items-center gap-3 text-xs text-slate-300 font-medium">
-                    <div class="hidden sm:flex items-center gap-1.5 bg-slate-950/70 border border-slate-800 px-3 py-1.5 rounded-lg text-slate-300">
-                        <i class="fa-regular fa-calendar text-blue-400"></i>
-                        <span id="current-date-badge">Memuatkan tarikh...</span>
-                    </div>
-                    <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg bg-rose-950/40 border border-rose-800/50 text-rose-300 hover:bg-rose-900/50 font-semibold transition flex items-center gap-1.5 text-xs active:scale-95" title="Kunci semula sistem">
+
+                <div class="flex items-center gap-2.5">
+                    <button onclick="exportToCsv()" class="text-xs px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl font-medium transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-csv text-emerald-400"></i>
+                        <span class="hidden sm:inline">Eksport</span> CSV
+                    </button>
+                    <button onclick="handleLogout()" class="text-xs px-3 py-2 bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 border border-rose-900/60 rounded-xl font-medium transition flex items-center gap-1.5" title="Kunci Skrin & Log Keluar">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        <span>Kunci / Keluar</span>
+                        <span class="hidden sm:inline">Kunci / </span>Keluar
                     </button>
                 </div>
             </div>
@@ -114,28 +124,21 @@
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6 flex-grow">
 
             <!-- BAR PENETAPAN GOOGLE SHEET CLOUD -->
-            <div class="bg-slate-900 border border-slate-800/80 p-4 rounded-2xl shadow-xl shadow-slate-950/60">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-blue-950/80 border border-blue-800/40 text-blue-400 flex items-center justify-center shrink-0">
-                            <i class="fa-solid fa-cloud text-lg"></i>
+                        <div class="w-9 h-9 rounded-xl bg-blue-950/60 border border-blue-800/50 text-blue-400 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-cloud text-base"></i>
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                                Sambungan ke Simpanan Secara Cloud
-                                <span class="bg-emerald-950/60 border border-emerald-800/50 text-emerald-300 text-[10px] font-semibold px-2 py-0.5 rounded-full">Aktif</span>
-                            </h3>
-                            <p class="text-xs text-slate-400">Maklumat dibawah seliaan En. W. Noraizuddin</p>
+                            <h3 class="text-sm font-bold text-white">Sambungan ke Simpanan Secara Cloud</h3>
+                            <p class="text-xs text-slate-400">Creator dan Maklumat diseliaan oleh En. W. Noraizuddin</p>
                         </div>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button onclick="fetchSheetData()" id="btn-sync-live" class="text-xs px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2 whitespace-nowrap active:scale-95">
+                    <div class="flex items-center gap-2">
+                        <button onclick="fetchSheetData()" id="btn-sync-live" class="w-full sm:w-auto text-xs px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-600/20 transition flex items-center justify-center gap-2 whitespace-nowrap">
                             <i class="fa-solid fa-rotate" id="sync-icon"></i>
                             <span id="sync-text">Sync Live</span>
-                        </button>
-                        <button onclick="exportToCSV()" class="text-xs px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-200 font-medium rounded-xl transition flex items-center justify-center gap-1.5 whitespace-nowrap" title="Muat Turun Rekod dalam bentuk CSV">
-                            <i class="fa-solid fa-file-excel text-emerald-400"></i>
-                            <span>Eksport CSV</span>
                         </button>
                     </div>
                 </div>
@@ -146,94 +149,92 @@
 
                 <!-- BAHAGIAN KIRI: FILTER & BORANG KERJA (5 COLS) -->
                 <div class="lg:col-span-5 space-y-6">
-                    
+
                     <!-- 1. FILTER UNIT (AUTO-LOAD) -->
-                    <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-xl shadow-slate-950/50 space-y-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                                <i class="fa-solid fa-building-user text-blue-400"></i> Pilihan Unit Jabatan
+                                <i class="fa-solid fa-filter text-blue-400"></i> Pilihan Unit Jabatan
                             </span>
-                            <span id="unit-source-badge" class="text-[11px] bg-blue-950/70 text-blue-300 px-2.5 py-0.5 rounded-full font-medium border border-blue-800/40">Langkah 1 (Pratetap)</span>
+                            <span id="unit-source-badge" class="text-[11px] bg-blue-950 text-blue-300 border border-blue-800 px-2.5 py-0.5 rounded-full font-medium">Langkah 1 (Pratetap)</span>
                         </div>
 
-                        <div>
-                            <label for="unit-select" class="block text-xs font-semibold text-slate-300 mb-1.5">Pilih Unit/ Seksyen:</label>
-                            <select id="unit-select" onchange="handleLoadUnitData(true)" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-700/80 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 transition cursor-pointer">
-                                <option value="" disabled selected>-- Sila Pilih Unit --</option>
-                                <option value="Unit Pentadbiran & Sumber Manusia">Unit Pentadbiran &amp; Sumber Manusia</option>
-                                <option value="Unit Kewangan & Akaun">Unit Kewangan &amp; Akaun</option>
-                                <option value="Unit Teknologi Maklumat & Digital">Unit Teknologi Maklumat &amp; Digital</option>
-                                <option value="Unit Perancangan Strategik & Operasi">Unit Perancangan Strategik &amp; Operasi</option>
-                                <option value="Unit Komunikasi Korporat & Perhubungan">Unit Komunikasi Korporat &amp; Perhubungan</option>
-                                <option value="Unit Integriti & Pematuhan">Unit Integriti &amp; Pematuhan</option>
-                            </select>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Pilih Unit/ Seksyen:</label>
+                                <select id="unit-select" onchange="handleLoadUnitData(true)" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                                    <option value="" disabled selected>-- Sila Pilih Unit --</option>
+                                    <option value="Unit Pentadbiran & Sumber Manusia">Unit Pentadbiran & Sumber Manusia</option>
+                                    <option value="Unit Kewangan & Akaun">Unit Kewangan & Akaun</option>
+                                    <option value="Unit Teknologi Maklumat & Digital">Unit Teknologi Maklumat & Digital</option>
+                                    <option value="Unit Perancangan Strategik & Operasi">Unit Perancangan Strategik & Operasi</option>
+                                    <option value="Unit Komunikasi Korporat & Perhubungan">Unit Komunikasi Korporat & Perhubungan</option>
+                                    <option value="Unit Integriti & Pematuhan">Unit Integriti & Pematuhan</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
                     <!-- 2. BORANG PENGISIAN RUANG -->
-                    <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-xl shadow-slate-950/50 space-y-5">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm space-y-5">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                             <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                                 <i class="fa-solid fa-pen-to-square text-blue-400"></i> Pengisian Maklumat Kerja
                             </span>
-                            <span class="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-medium">Langkah 2</span>
+                            <span class="text-[11px] bg-slate-800 text-slate-300 border border-slate-700 px-2.5 py-0.5 rounded-full font-medium">Langkah 2</span>
                         </div>
 
                         <form id="work-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                            <!-- Skop Kerja -->
+                            <!-- Skop Kerja: Dropdown Boleh Pilih & Scroll -->
                             <div>
-                                <label for="skop-select" class="block text-xs font-semibold text-slate-300 mb-1.5">
-                                    <i class="fa-solid fa-layer-group text-slate-500 mr-1"></i> Skop Kerja
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    <i class="fa-solid fa-layer-group text-blue-400 mr-1"></i> Skop Kerja
                                 </label>
-                                <div class="relative">
-                                    <select id="skop-select" required onchange="handleSkopChange()"
-                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-700/80 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 transition cursor-pointer">
-                                        <option value="" disabled selected>-- Sila Pilih Unit Dahulu --</option>
-                                    </select>
-                                </div>
+                                <select id="skop-select" required onchange="handleSkopChange()"
+                                    class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                                    <option value="" disabled selected>-- Sila Pilih Unit Dahulu --</option>
+                                </select>
                             </div>
 
-                            <!-- Nama Kerja (Filter berasaskan Skop) -->
+                            <!-- Nama Kerja: Dropdown Boleh Pilih & Scroll (Berasaskan Skop) -->
                             <div>
-                                <label for="kerja-select" class="block text-xs font-semibold text-slate-300 mb-1.5">
-                                    <i class="fa-solid fa-briefcase text-slate-500 mr-1"></i> Nama / Deskripsi Kerja
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    <i class="fa-solid fa-briefcase text-blue-400 mr-1"></i> Nama / Deskripsi Kerja
                                 </label>
-                                <div class="relative">
-                                    <select id="kerja-select" required onchange="handleKerjaChange()"
-                                        class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-700/80 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 transition cursor-pointer">
-                                        <option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>
-                                    </select>
-                                </div>
+                                <select id="kerja-select" required onchange="handleKerjaChange()"
+                                    class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer">
+                                    <option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>
+                                </select>
                             </div>
 
-                            <!-- Pilihan Tarikh: Tarikh Mula & Tarikh Tamat -->
+                            <!-- Pilihan Tarikh: Kalendar -->
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label for="date-start" class="block text-xs font-semibold text-slate-300 mb-1.5">
-                                        <i class="fa-regular fa-calendar-plus text-slate-500 mr-1"></i> Tarikh Mula
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        <i class="fa-regular fa-calendar-plus text-slate-400 mr-1"></i> Tarikh Mula
                                     </label>
                                     <input type="date" id="date-start" required onchange="calculateDueDate()"
-                                        class="w-full text-sm px-3 py-2 rounded-xl border border-slate-700/80 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70">
+                                        class="w-full text-sm px-3 py-2 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                                 <div>
-                                    <label for="date-end" class="block text-xs font-semibold text-slate-300 mb-1.5">
-                                        <i class="fa-regular fa-calendar-check text-slate-500 mr-1"></i> Tarikh Tamat
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        <i class="fa-regular fa-calendar-check text-slate-400 mr-1"></i> Tarikh Tamat
                                     </label>
                                     <input type="date" id="date-end" required onchange="calculateDueDate()"
-                                        class="w-full text-sm px-3 py-2 rounded-xl border border-slate-700/80 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/70">
+                                        class="w-full text-sm px-3 py-2 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                             </div>
 
                             <!-- Tempoh Due Date Display -->
-                            <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+                            <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
                                 <span class="text-slate-400 font-medium">Baki / Tempoh Masa:</span>
-                                <span id="due-date-badge" class="font-bold text-slate-200">Sila pilih tarikh</span>
+                                <span id="due-date-badge" class="font-bold text-slate-300">Sila pilih tarikh</span>
                             </div>
 
                             <!-- PEMILIHAN / INDIKATOR JENIS KEMAJUAN (MESYUARAT VS STANDARD) -->
                             <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
                                 <span class="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-sliders text-blue-400"></i> Kaedah Pengiraan Kemajuan:
+                                    <i class="fa-solid fa-sliders text-blue-400"></i> Kaedah Pengiraan:
                                 </span>
                                 <button type="button" id="btn-toggle-meeting-mode" onclick="toggleProgressModeManual()" 
                                     class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 transition flex items-center gap-1">
@@ -242,15 +243,15 @@
                                 </button>
                             </div>
 
-                            <!-- 1. KOMPONEN KEMAJUAN KHAS: BILANGAN MESYUARAT (MAKSIMUM 7 KALI = 100%) -->
+                            <!-- 1. KOMPONEN KEMAJUAN KHAS: BILANGAN MESYUARAT (4 KALI UNTUK JKKITM, 7 KALI UNTUK LAIN-LAIN) -->
                             <div id="section-progress-meeting" class="space-y-3 p-3.5 bg-blue-950/40 border border-blue-900/60 rounded-xl hidden transition-all">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <div class="flex items-center gap-1.5">
                                             <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
-                                            <label class="text-xs font-bold text-blue-200">Kemajuan Mesyuarat (Sasaran 7 Kali):</label>
+                                            <label id="meeting-title-label" class="text-xs font-bold text-blue-200">Kemajuan Mesyuarat (Sasaran 7 Kali):</label>
                                         </div>
-                                        <p class="text-[11px] text-blue-300/80 mt-0.5">Setiap 1 sesi mesyuarat = ~14.3% (7 kali = 100%)</p>
+                                        <p id="meeting-subtext-label" class="text-[11px] text-blue-300/80 mt-0.5">Setiap 1 sesi mesyuarat = ~14.3% (7 kali = 100%)</p>
                                     </div>
                                     <span id="meeting-percentage-display" class="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white shadow-xs">
                                         0 / 7 (0%)
@@ -262,15 +263,9 @@
                                     <div id="meeting-progress-bar" class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
                                 </div>
 
-                                <!-- 7 Kotak Semak Sesi Mesyuarat -->
-                                <div class="grid grid-cols-7 gap-1.5 pt-1">
-                                    <button type="button" onclick="setMeetingCount(1)" id="btn-meet-1" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">1</button>
-                                    <button type="button" onclick="setMeetingCount(2)" id="btn-meet-2" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">2</button>
-                                    <button type="button" onclick="setMeetingCount(3)" id="btn-meet-3" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">3</button>
-                                    <button type="button" onclick="setMeetingCount(4)" id="btn-meet-4" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">4</button>
-                                    <button type="button" onclick="setMeetingCount(5)" id="btn-meet-5" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">5</button>
-                                    <button type="button" onclick="setMeetingCount(6)" id="btn-meet-6" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">6</button>
-                                    <button type="button" onclick="setMeetingCount(7)" id="btn-meet-7" class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-blue-950 text-slate-300 text-xs font-bold transition">7</button>
+                                <!-- Kotak Semak Sesi Mesyuarat (Dinamik mengikut grid: 4 atau 7 butang) -->
+                                <div id="meeting-buttons-container" class="grid grid-cols-7 gap-1.5 pt-1">
+                                    <!-- Dijana secara dinamik oleh JavaScript -->
                                 </div>
 
                                 <!-- Kawalan Cepat + / - & Info Status Semasa -->
@@ -284,40 +279,40 @@
                             </div>
 
                             <!-- 2. MULTIPLE TICK PERATUSAN STANDARD (40% + 20% + 40%) -->
-                            <div id="section-progress-standard" class="space-y-2">
+                            <div id="section-progress-standard" class="space-y-2 pt-2">
                                 <div class="flex items-center justify-between">
-                                    <label class="text-xs font-semibold text-slate-300">Komponen Kemajuan (Multiple Tick):</label>
-                                    <span id="percentage-display" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0%</span>
+                                    <label class="text-xs font-semibold text-slate-300">Komponen Kemajuan Standard:</label>
+                                    <span id="percentage-display" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">0%</span>
                                 </div>
 
                                 <div class="space-y-2">
                                     <!-- Tick 1: 40% -->
-                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-800 hover:bg-slate-800/60 bg-slate-950/60 cursor-pointer transition select-none">
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-900 cursor-pointer transition select-none">
                                         <input type="checkbox" id="tick-paperwork" value="40" onchange="calculatePercentage()"
-                                            class="w-4 h-4 text-blue-600 bg-slate-900 rounded border-slate-700 focus:ring-blue-500">
+                                            class="w-4 h-4 text-blue-600 rounded border-slate-700 bg-slate-900 focus:ring-blue-500">
                                         <div class="ml-3 flex-grow flex justify-between items-center text-xs">
-                                            <span class="font-medium text-slate-200">Kertas Kerja / Mesyuarat / Usul</span>
-                                            <span class="bg-blue-950 text-blue-300 border border-blue-800/40 font-semibold px-2 py-0.5 rounded-md">40%</span>
+                                            <span class="font-medium text-slate-300">Kertas Kerja / Mesyuarat / Usul</span>
+                                            <span class="bg-blue-950 text-blue-300 border border-blue-800/80 font-semibold px-2 py-0.5 rounded-md">40%</span>
                                         </div>
                                     </label>
 
                                     <!-- Tick 2: 20% -->
-                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-800 hover:bg-slate-800/60 bg-slate-950/60 cursor-pointer transition select-none">
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-900 cursor-pointer transition select-none">
                                         <input type="checkbox" id="tick-broadcast" value="20" onchange="calculatePercentage()"
-                                            class="w-4 h-4 text-blue-600 bg-slate-900 rounded border-slate-700 focus:ring-blue-500">
+                                            class="w-4 h-4 text-blue-600 rounded border-slate-700 bg-slate-900 focus:ring-blue-500">
                                         <div class="ml-3 flex-grow flex justify-between items-center text-xs">
-                                            <span class="font-medium text-slate-200">Hebahan / Publisiti</span>
-                                            <span class="bg-amber-950/60 text-amber-300 border border-amber-800/40 font-semibold px-2 py-0.5 rounded-md">20%</span>
+                                            <span class="font-medium text-slate-300">Hebahan / Publisiti</span>
+                                            <span class="bg-amber-950 text-amber-300 border border-amber-800/80 font-semibold px-2 py-0.5 rounded-md">20%</span>
                                         </div>
                                     </label>
 
                                     <!-- Tick 3: 40% -->
-                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-800 hover:bg-slate-800/60 bg-slate-950/60 cursor-pointer transition select-none">
+                                    <label class="flex items-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-900 cursor-pointer transition select-none">
                                         <input type="checkbox" id="tick-execution" value="40" onchange="calculatePercentage()"
-                                            class="w-4 h-4 text-blue-600 bg-slate-900 rounded border-slate-700 focus:ring-blue-500">
+                                            class="w-4 h-4 text-blue-600 rounded border-slate-700 bg-slate-900 focus:ring-blue-500">
                                         <div class="ml-3 flex-grow flex justify-between items-center text-xs">
-                                            <span class="font-medium text-slate-200">Pelaksanaan Program / Tugasan</span>
-                                            <span class="bg-emerald-950/60 text-emerald-300 border border-emerald-800/40 font-semibold px-2 py-0.5 rounded-md">40%</span>
+                                            <span class="font-medium text-slate-300">Pelaksanaan Program / Tugasan</span>
+                                            <span class="bg-emerald-950 text-emerald-300 border border-emerald-800/80 font-semibold px-2 py-0.5 rounded-md">40%</span>
                                         </div>
                                     </label>
                                 </div>
@@ -325,21 +320,18 @@
 
                             <!-- RUANG STATUS (AUTO GENERATED) -->
                             <div class="pt-2">
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Status Tugasan (Automatik)</label>
-                                <div id="status-container" class="flex items-center gap-2 p-3 bg-slate-950 border border-slate-800 rounded-xl transition">
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Status Tugasan (Automatik)</label>
+                                <div id="status-container" class="flex items-center gap-2.5 p-3 bg-slate-950 border border-slate-800 rounded-xl">
                                     <span id="status-icon" class="w-3 h-3 rounded-full bg-slate-600"></span>
                                     <span id="status-text" class="text-xs font-bold text-slate-400">Belum Mula (0%)</span>
                                 </div>
                             </div>
 
-                            <!-- BUTANG SIMPAN & SET SEMULA -->
-                            <div class="pt-2 flex flex-col gap-2">
-                                <button type="submit" id="btn-save" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-emerald-600/25 transition flex items-center justify-center gap-2 active:scale-[0.99]">
+                            <!-- BUTANG SIMPAN -->
+                            <div class="pt-2">
+                                <button type="submit" id="btn-save" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2 active:scale-[0.99]">
                                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                                    <span id="btn-save-text">Simpan &amp; Hantar ke Cloud Google Sheet</span>
-                                </button>
-                                <button type="button" onclick="resetWorkForm()" class="w-full bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-300 text-xs font-medium py-2 rounded-xl transition">
-                                    <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Kosongkan Isian Borang
+                                    <span id="btn-save-text">Simpan & Hantar ke Cloud Google Sheet</span>
                                 </button>
                             </div>
                         </form>
@@ -347,63 +339,68 @@
 
                 </div>
 
-                <!-- BAHAGIAN KANAN: PAPARAN REKOD (7 COLS) -->
+                <!-- BAHAGIAN KANAN: PAPARAN REKOD WAKTU TERSEBUT (7 COLS) -->
                 <div class="lg:col-span-7 space-y-4">
-                    <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-xl shadow-slate-950/50">
-                        <!-- HEADER JADUAL -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
                             <div>
-                                <h2 class="font-bold text-white text-sm flex items-center gap-2">
+                                <h3 class="font-bold text-white text-sm flex items-center gap-2">
                                     <i class="fa-solid fa-clock-rotate-left text-blue-400"></i>
-                                    Rekod Kerja Yang Diisi
-                                </h2>
-                                <p class="text-xs text-slate-400">Paparan auto-filter mengikut Unit dan Skop Kerja yang dipilih.</p>
+                                    Senarai Rekod Tugasan
+                                </h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Senarai tugasan yang disimpan.</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span id="record-count-badge" class="text-xs bg-slate-950 text-slate-300 border border-slate-800 px-3 py-1 rounded-full font-medium">
+                                <span id="record-count-badge" class="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-3 py-1 rounded-full font-medium">
                                     0 Rekod
                                 </span>
                             </div>
                         </div>
 
-                        <!-- BAR CARIAN & INDIKATOR TAPISAN -->
-                        <div class="mt-4 space-y-2">
-                            <!-- Input Carian Cepat -->
-                            <div class="relative">
-                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-500 text-xs"></i>
-                                <input type="text" id="table-search-input" onkeyup="handleSearch()" placeholder="Cari nama kerja, unit atau skop..."
-                                    class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 bg-slate-950 text-slate-100 placeholder-slate-500">
+                        <!-- BAR CARIAN MASA NYATA & TAPISAN STATUS -->
+                        <div class="flex flex-col sm:flex-row items-center gap-2.5">
+                            <div class="relative w-full">
+                                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                </span>
+                                <input type="text" id="table-search-input" onkeyup="handleSearchInput(event)" placeholder="Cari nama kerja, skop atau status..."
+                                    class="w-full text-xs pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
                             </div>
+                            <button onclick="renderRecordsTable(true)" class="w-full sm:w-auto text-xs px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-slate-300 transition whitespace-nowrap flex items-center justify-center gap-1.5" title="Papar semua rekod tanpa tapisan dropdown">
+                                <i class="fa-solid fa-arrows-rotate text-blue-400"></i>
+                                <span>Semua</span>
+                            </button>
+                        </div>
 
-                            <div id="filter-status-bar" class="p-2.5 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
-                                <div class="flex items-center gap-2 text-slate-400 truncate mr-2">
-                                    <i class="fa-solid fa-filter text-blue-400 text-xs"></i>
-                                    <span class="font-medium text-slate-400">Tapisan Semasa:</span>
-                                    <span id="filter-active-label" class="font-semibold text-slate-200 truncate">Semua Rekod (Tiada Tapisan)</span>
-                                </div>
-                                <button id="btn-reset-table-filter" onclick="resetTableFilter()" class="hidden text-[11px] font-semibold text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 whitespace-nowrap">
-                                    <i class="fa-solid fa-rotate-left"></i> Papar Semua
-                                </button>
+                        <!-- BAR INDIKATOR AUTO-FILTER -->
+                        <div id="filter-status-bar" class="p-2.5 bg-slate-950 border border-slate-800/80 rounded-xl flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2 text-slate-400 truncate">
+                                <i class="fa-solid fa-filter text-blue-400 text-xs"></i>
+                                <span class="font-medium text-slate-500">Tapisan:</span>
+                                <span id="filter-active-label" class="font-semibold text-slate-200 truncate">Semua Rekod</span>
                             </div>
+                            <button id="btn-reset-table-filter" onclick="resetTableFilter()" class="hidden text-[11px] font-semibold text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 whitespace-nowrap">
+                                <i class="fa-solid fa-rotate-left"></i> Set Semula
+                            </button>
                         </div>
 
                         <!-- SENARAI JADUAL PAPARAN -->
-                        <div class="overflow-x-auto mt-4">
-                            <table class="w-full text-left text-xs table-fixed min-w-[540px]">
+                        <div class="overflow-x-auto rounded-xl border border-slate-800/80">
+                            <table class="w-full text-left text-xs table-fixed min-w-[550px]">
                                 <thead>
-                                    <tr class="text-slate-400 uppercase tracking-wider border-b border-slate-800 bg-slate-950/70">
-                                        <th class="py-2.5 px-3 font-semibold w-[44%]">Kerja &amp; Unit</th>
-                                        <th class="py-2.5 px-2 font-semibold w-[22%]">Tarikh</th>
-                                        <th class="py-2.5 px-2 font-semibold w-[12%] text-center">Tempoh</th>
-                                        <th class="py-2.5 px-1 font-semibold w-[10%] text-center">Prestasi</th>
-                                        <th class="py-2.5 px-2 font-semibold w-[12%] text-right">Status</th>
+                                    <tr class="text-slate-400 uppercase tracking-wider border-b border-slate-800 bg-slate-950">
+                                        <th class="py-3 px-3.5 font-semibold w-[42%]">Kerja & Unit</th>
+                                        <th class="py-3 px-2 font-semibold w-[22%]">Tarikh</th>
+                                        <th class="py-3 px-2 font-semibold w-[12%] text-center">Tempoh</th>
+                                        <th class="py-3 px-2 font-semibold w-[12%] text-center">Prestasi</th>
+                                        <th class="py-3 px-3 font-semibold w-[12%] text-right">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody id="session-records-body" class="divide-y divide-slate-800 text-slate-300">
+                                <tbody id="session-records-body" class="divide-y divide-slate-800 text-slate-300 bg-slate-900/60">
                                     <tr id="empty-row">
                                         <td colspan="5" class="text-center py-12 text-slate-500">
-                                            <i class="fa-regular fa-folder-open text-3xl mb-2 block text-slate-600"></i>
-                                            Belum ada rekod kerja yang diisi pada sesi ini. Sila lengkapkan borang di sebelah kiri.
+                                            <i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>
+                                            Belum ada rekod kerja yang diisi. Sila lengkapkan borang di sebelah kiri.
                                         </td>
                                     </tr>
                                 </tbody>
@@ -417,109 +414,19 @@
         </main>
 
         <!-- FOOTER -->
-        <footer class="bg-slate-900 border-t border-slate-800/80 py-4 text-center text-xs text-slate-400 mt-6">
-            Sistem Pengesanan Status Kerja Jabatan &bull; Sambungan Cloud Google Sheets Terkawal
+        <footer class="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
+            Sistem Pengesanan Status Kerja Jabatan &bull; Sambungan Cloud Google Sheets Terkawal &bull; Hak Cipta Terpelihara
         </footer>
     </div>
 
     <!-- LOGIK JAVASCRIPT SISTEM -->
     <script>
-        // KATA LALUAN DISULITKAN DENGAN SHA-256
-        // Kata laluan lalai: admin123
-        // Hash SHA-256 bagi "admin123":
+        // Kredensial Kata Laluan Akses SHA-256 (Lalai: "admin123")
         const PASSWORD_SHA256_HASH = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
+        const SESSION_AUTH_KEY = "status_kerja_auth_token";
+        const LOCAL_STORAGE_KEY = "status_kerja_records_cache";
 
-        // Fungsi Penukaran Rentetan Teks kepada Hash SHA-256
-        async function sha256(str) {
-            const buffer = new TextEncoder().encode(str);
-            const digest = await crypto.subtle.digest('SHA-256', buffer);
-            return Array.from(new Uint8Array(digest))
-                .map(b => b.toString(16).padStart(2, '0'))
-                .join('');
-        }
-
-        // Semakan Log Masuk Kata Laluan
-        async function handlePasswordSubmit(event) {
-            event.preventDefault();
-            const pwdInput = document.getElementById('system-password');
-            const errorMsg = document.getElementById('password-error');
-            const enteredPassword = pwdInput.value;
-
-            if (!enteredPassword) return;
-
-            try {
-                const computedHash = await sha256(enteredPassword);
-
-                if (computedHash === PASSWORD_SHA256_HASH) {
-                    // Simpan status sesi dalam sessionStorage
-                    sessionStorage.setItem('sistem_kerja_auth', 'true');
-                    
-                    if (errorMsg) errorMsg.classList.add('hidden');
-                    pwdInput.value = "";
-
-                    unlockApp();
-                    showToast("Kata laluan disahkan! Selamat datang.", "success");
-                } else {
-                    if (errorMsg) errorMsg.classList.remove('hidden');
-                    pwdInput.classList.add('border-rose-500', 'ring-1', 'ring-rose-500');
-                    pwdInput.select();
-                    showToast("Kata laluan salah. Akses ditolak!", "error");
-                }
-            } catch (err) {
-                console.error("Ralat pengesahan hash:", err);
-                showToast("Ralat memproses keselamatan kata laluan.", "error");
-            }
-        }
-
-        // Buka Kunci Paparan Aplikasi
-        function unlockApp() {
-            const loginModal = document.getElementById('login-modal');
-            const mainApp = document.getElementById('main-app');
-
-            if (loginModal) loginModal.classList.add('hidden');
-            if (mainApp) mainApp.classList.remove('hidden');
-
-            // Muatkan rekod dan data Google Sheet selepas dibuka
-            loadLocalRecords();
-            fetchSheetData();
-        }
-
-        // Kunci Semula / Log Keluar
-        function handleLogout() {
-            sessionStorage.removeItem('sistem_kerja_auth');
-            const loginModal = document.getElementById('login-modal');
-            const mainApp = document.getElementById('main-app');
-            const pwdInput = document.getElementById('system-password');
-            const errorMsg = document.getElementById('password-error');
-
-            if (mainApp) mainApp.classList.add('hidden');
-            if (loginModal) loginModal.classList.remove('hidden');
-            if (pwdInput) {
-                pwdInput.value = "";
-                pwdInput.classList.remove('border-rose-500', 'ring-1', 'ring-rose-500');
-                pwdInput.focus();
-            }
-            if (errorMsg) errorMsg.classList.add('hidden');
-
-            showToast("Sistem berjaya dikunci semula.", "info");
-        }
-
-        // Lihat / Sembunyi Kata Laluan
-        function togglePasswordVisibility() {
-            const pwdInput = document.getElementById('system-password');
-            const eyeIcon = document.getElementById('pwd-eye-icon');
-            if (!pwdInput || !eyeIcon) return;
-
-            if (pwdInput.type === "password") {
-                pwdInput.type = "text";
-                eyeIcon.className = "fa-regular fa-eye-slash text-blue-600";
-            } else {
-                pwdInput.type = "password";
-                eyeIcon.className = "fa-regular fa-eye text-slate-400";
-            }
-        }
-
-        // Bank Data Skop & Cadangan Kerja bagi setiap Unit (Hierarki: Unit -> Skop -> Senarai Kerja)
+        // Bank Data Skop & Cadangan Kerja bagi setiap Unit
         const UNIT_DATA_PRESETS = {
             "Unit Pentadbiran & Sumber Manusia": {
                 "Pengurusan Sumber Manusia & Latihan": [
@@ -562,7 +469,7 @@
                     "Penyediaan Kertas Kerja Lembaga Pemeriksa Pelupusan Aset"
                 ],
                 "Pungutan Hasil & Akaun Amanah": [
-                    "Penyediaan Penyata Penyata Pungutan Hasil Mingguan",
+                    "Penyediaan Penyata Pungutan Hasil Mingguan",
                     "Penyelarasan Rekod Akaun Amanah Jabatan"
                 ]
             },
@@ -574,6 +481,10 @@
                 "Pembangunan & Penyelenggaraan Sistem Aplikasi": [
                     "Pembangunan Modul Tambahan Sistem Dalaman",
                     "Ujian Penerimaan Pengguna (UAT) Aplikasi Baharu"
+                ],
+                "Penyelarasan & Mesyuarat Teknikal ICT": [
+                    "Mesyuarat JKKITM (Jawatankuasa Pemandu ICT)",
+                    "Mesyuarat Penyelarasan Pasukan Teknikal IT"
                 ],
                 "Keselamatan Siber & Pengurusan Sandaran (Backup)": [
                     "Audit Pematuhan Keselamatan Maklumat (ICT Security Audit)",
@@ -663,52 +574,96 @@
         let cloudUnitMapping = {};
         let searchQuery = "";
         let isMeetingMode = false;
-        let currentMeetingCount = 0; // 0 hingga 7 kali
+        let currentMeetingTarget = 7; // 4 untuk JKKITM, 7 untuk mesyuarat biasa
+        let currentMeetingCount = 0;
 
-        // Inisialisasi Aplikasi Semasa Window Sedia
-        window.onload = function() {
-            // Paparkan tarikh semasa
-            const dateBadge = document.getElementById('current-date-badge');
-            if (dateBadge) {
-                const now = new Date();
-                dateBadge.textContent = now.toLocaleDateString('ms-MY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            }
+        // FUNGSI KESELAMATAN SHA-256
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
-            // Tetapkan tarikh mula borang secara lalai ke hari ini
-            const dateStartInput = document.getElementById('date-start');
-            if (dateStartInput) {
-                dateStartInput.value = new Date().toISOString().split('T')[0];
-            }
+        function initAuth() {
+            const isAuth = sessionStorage.getItem(SESSION_AUTH_KEY);
+            const authScreen = document.getElementById('auth-screen');
+            const mainApp = document.getElementById('main-app');
 
-            // Semak status log masuk sesi semasa
-            const isAuthenticated = sessionStorage.getItem('sistem_kerja_auth') === 'true';
-            if (isAuthenticated) {
-                unlockApp();
+            if (isAuth === "authenticated") {
+                if (authScreen) authScreen.classList.add('hidden');
+                if (mainApp) mainApp.classList.remove('hidden');
             } else {
-                const pwdInput = document.getElementById('system-password');
-                if (pwdInput) pwdInput.focus();
-            }
-        };
-
-        // Muat rekod daripada localStorage
-        function loadLocalRecords() {
-            try {
-                const saved = localStorage.getItem('sistem_status_kerja_records');
-                if (saved) {
-                    currentSessionRecords = JSON.parse(saved);
-                    renderRecordsTable();
-                }
-            } catch (e) {
-                console.warn("Gagal memuatkan rekod tempatan:", e);
+                if (authScreen) authScreen.classList.remove('hidden');
+                if (mainApp) mainApp.classList.add('hidden');
+                setTimeout(() => {
+                    document.getElementById('auth-password-input')?.focus();
+                }, 100);
             }
         }
 
-        // Simpan rekod ke localStorage
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            const passwordInput = document.getElementById('auth-password-input');
+            const errorMsg = document.getElementById('auth-error-msg');
+            const val = passwordInput.value;
+
+            if (!val) return;
+
+            const hashed = await sha256(val);
+            if (hashed === PASSWORD_SHA256_HASH) {
+                sessionStorage.setItem(SESSION_AUTH_KEY, "authenticated");
+                errorMsg.classList.add('hidden');
+                passwordInput.value = "";
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                showToast("Selamat datang ke Sistem Pelaksanaan dan Prestasu Tugas!", "success");
+            } else {
+                errorMsg.classList.remove('hidden');
+                passwordInput.value = "";
+                passwordInput.focus();
+                showToast("Kata laluan tidak sah!", "error");
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const input = document.getElementById('auth-password-input');
+            const icon = document.getElementById('auth-eye-icon');
+            if (!input || !icon) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-regular fa-eye-slash text-sm text-blue-400';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-regular fa-eye text-sm text-slate-400';
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem(SESSION_AUTH_KEY);
+            initAuth();
+            showToast("Anda telah berjaya log keluar.", "info");
+        }
+
+        // Simpanan Lokal Rekod Kerja
         function saveLocalRecords() {
             try {
-                localStorage.setItem('sistem_status_kerja_records', JSON.stringify(currentSessionRecords));
-            } catch (e) {
-                console.warn("Gagal menyimpan ke localStorage:", e);
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(currentSessionRecords));
+            } catch (err) {
+                console.warn("Gagal menyimpan ke localStorage:", err);
+            }
+        }
+
+        function loadLocalRecords() {
+            try {
+                const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (data) {
+                    currentSessionRecords = JSON.parse(data);
+                }
+            } catch (err) {
+                console.warn("Gagal memuat dari localStorage:", err);
+                currentSessionRecords = [];
             }
         }
 
@@ -735,6 +690,170 @@
             }, 3500);
         }
 
+        // Formula kiraan peratus mesyuarat: 4 kali untuk JKKITM, 7 kali untuk lain-lain
+        function calculateMeetingPercentageVal(count, target = 7) {
+            const maxTarget = target === 4 ? 4 : 7;
+            if (count >= maxTarget) return 100;
+            if (count <= 0) return 0;
+            if (maxTarget === 4) {
+                return Math.round((count / 4) * 100);
+            }
+            return Math.round((count / 7) * 100);
+        }
+
+        // Mengemaskini UI visual mesyuarat
+        function updateMeetingUI() {
+            const display = document.getElementById('meeting-percentage-display');
+            const bar = document.getElementById('meeting-progress-bar');
+            const desc = document.getElementById('meeting-count-desc');
+            const target = currentMeetingTarget || 7;
+
+            const percent = calculateMeetingPercentageVal(currentMeetingCount, target);
+
+            if (display) {
+                display.innerText = `${currentMeetingCount} / ${target} (${percent}%)`;
+                display.className = currentMeetingCount === target 
+                    ? "text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-600 text-white shadow-xs"
+                    : (currentMeetingCount > 0 
+                        ? "text-xs font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white shadow-xs" 
+                        : "text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700");
+            }
+
+            if (bar) {
+                bar.style.width = `${percent}%`;
+                bar.className = currentMeetingCount === target 
+                    ? "bg-emerald-400 h-full rounded-full transition-all duration-300"
+                    : "bg-blue-500 h-full rounded-full transition-all duration-300";
+            }
+
+            // Kemas kini gaya butang langkah
+            for (let i = 1; i <= target; i++) {
+                const btn = document.getElementById(`btn-meet-${i}`);
+                if (!btn) continue;
+                if (i <= currentMeetingCount) {
+                    btn.className = "meet-step-btn py-2 text-center rounded-lg border border-blue-500 bg-blue-600 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition";
+                } else {
+                    btn.className = "meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-slate-800 text-slate-300 text-xs font-bold transition";
+                }
+            }
+
+            if (desc) {
+                if (currentMeetingCount === 0) {
+                    desc.innerText = "Belum ada mesyuarat dijalankan.";
+                } else if (currentMeetingCount === target) {
+                    desc.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Sasaran ${target} kali mesyuarat selesai!</span>`;
+                } else {
+                    const baki = target - currentMeetingCount;
+                    desc.innerHTML = `Telah dijalankan <b>${currentMeetingCount} kali</b> (Baki: ${baki} sesi lagi).`;
+                }
+            }
+        }
+
+        function setMeetingCount(count) {
+            if (count < 0) count = 0;
+            if (count > currentMeetingTarget) count = currentMeetingTarget;
+            currentMeetingCount = count;
+            updateMeetingUI();
+            calculatePercentage();
+        }
+
+        function adjustMeetingCount(delta) {
+            setMeetingCount(currentMeetingCount + delta);
+        }
+
+        function generateMeetingButtons(target) {
+            const container = document.getElementById('meeting-buttons-container');
+            if (!container) return;
+
+            container.className = target === 4 ? "grid grid-cols-4 gap-2 pt-1" : "grid grid-cols-7 gap-1.5 pt-1";
+            let buttonsHtml = "";
+            for (let i = 1; i <= target; i++) {
+                buttonsHtml += `
+                    <button type="button" onclick="setMeetingCount(${i})" id="btn-meet-${i}" 
+                        class="meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-slate-800 text-slate-300 text-xs font-bold transition">
+                        ${i}
+                    </button>
+                `;
+            }
+            container.innerHTML = buttonsHtml;
+        }
+
+        function setMeetingMode(active, target = 7) {
+            isMeetingMode = active;
+            currentMeetingTarget = target === 4 ? 4 : 7;
+            if (currentMeetingCount > currentMeetingTarget) {
+                currentMeetingCount = currentMeetingTarget;
+            }
+
+            const secMeeting = document.getElementById('section-progress-meeting');
+            const secStandard = document.getElementById('section-progress-standard');
+            const toggleLabel = document.getElementById('mode-toggle-label');
+            const titleLabel = document.getElementById('meeting-title-label');
+            const subtextLabel = document.getElementById('meeting-subtext-label');
+
+            if (isMeetingMode) {
+                secMeeting?.classList.remove('hidden');
+                secStandard?.classList.add('hidden');
+                if (toggleLabel) {
+                    toggleLabel.innerHTML = currentMeetingTarget === 4
+                        ? `<span class="text-blue-400 font-bold">Mesyuarat JKKITM (4 Kali)</span>`
+                        : `<span class="text-blue-400 font-bold">Mesyuarat (7 Kali)</span>`;
+                }
+                if (titleLabel) {
+                    titleLabel.textContent = currentMeetingTarget === 4
+                        ? "Kemajuan Mesyuarat JKKITM (Sasaran 4 Kali):"
+                        : "Kemajuan Mesyuarat (Sasaran 7 Kali):";
+                }
+                if (subtextLabel) {
+                    subtextLabel.textContent = currentMeetingTarget === 4
+                        ? "Setiap 1 sesi mesyuarat = 25% (4 kali = 100%)"
+                        : "Setiap 1 sesi mesyuarat = ~14.3% (7 kali = 100%)";
+                }
+                generateMeetingButtons(currentMeetingTarget);
+                updateMeetingUI();
+            } else {
+                secMeeting?.classList.add('hidden');
+                secStandard?.classList.remove('hidden');
+                if (toggleLabel) toggleLabel.innerHTML = `<span>Standard (3 Fasa)</span>`;
+            }
+
+            calculatePercentage();
+        }
+
+        function checkIsMeetingText(text) {
+            if (!text) return false;
+            const t = text.toLowerCase();
+            return t.includes("mesyuarat") || t.includes("meeting") || t.includes("jpka") || t.includes("jkkitm");
+        }
+
+        function isJkkitmMeeting(text) {
+            if (!text) return false;
+            const t = text.toLowerCase();
+            return t.includes("jkkitm");
+        }
+
+        function detectAndApplyMeetingMode(kerjaText, skopText) {
+            const combined = `${kerjaText || ''} ${skopText || ''}`;
+            const isMeeting = checkIsMeetingText(combined);
+            const isJkkitm = isJkkitmMeeting(combined);
+            const targetCount = isJkkitm ? 4 : 7;
+            setMeetingMode(isMeeting, targetCount);
+        }
+
+        function toggleProgressModeManual() {
+            if (!isMeetingMode) {
+                const unit = document.getElementById('unit-select')?.value || '';
+                const skop = document.getElementById('skop-select')?.value || '';
+                const kerja = document.getElementById('kerja-select')?.value || '';
+                const isJkkitm = isJkkitmMeeting(`${kerja} ${skop} ${unit}`);
+                setMeetingMode(true, isJkkitm ? 4 : 7);
+                showToast(`Mod kemajuan ditukar kepada: Mesyuarat (${isJkkitm ? 'JKKITM 4 Kali' : '7 Kali'})`, "info");
+            } else {
+                setMeetingMode(false);
+                showToast("Mod kemajuan ditukar kepada: Standard (40/20/40)", "info");
+            }
+        }
+
         // Muat Data Unit (Auto-Load apabila Unit dipilih)
         function handleLoadUnitData(isAuto = false) {
             const select = document.getElementById('unit-select');
@@ -749,10 +868,8 @@
             const skopSelect = document.getElementById('skop-select');
             const kerjaSelect = document.getElementById('kerja-select');
 
-            // Reset dropdown kerja sehingga skop dipilih
             kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>`;
 
-            // 1. Semak data dari Live Sync Google Sheet
             if (cloudUnitMapping[selectedUnit]) {
                 const skopList = Object.keys(cloudUnitMapping[selectedUnit]);
                 skopSelect.innerHTML = `<option value="" disabled selected>-- Pilih Skop Kerja (${skopList.length} Pilihan) --</option>`;
@@ -762,9 +879,8 @@
                     opt.textContent = item;
                     skopSelect.appendChild(opt);
                 });
-                showToast(`Skop bagi "${selectedUnit}" sedia dipilih.`, "info");
+                showToast(`Auto-load: Skop bagi "${selectedUnit}" sedia dipilih!`, "success");
             } else {
-                // 2. Sandaran kepada Bank Data Preset
                 const presetUnit = UNIT_DATA_PRESETS[selectedUnit];
                 if (presetUnit) {
                     const skopList = Object.keys(presetUnit);
@@ -775,13 +891,14 @@
                         opt.textContent = item;
                         skopSelect.appendChild(opt);
                     });
+                    showToast(`Auto-load: Skop bagi "${selectedUnit}" telah dimuatkan.`, "info");
                 }
             }
 
             renderRecordsTable();
         }
 
-        // Auto-Load Apabila Skop Kerja Dipilih -> Filter Nama Kerja di bawah Skop
+        // Auto-Load Apabila Skop Kerja Dipilih -> Filter Nama Kerja
         function handleSkopChange() {
             const unitSelect = document.getElementById('unit-select');
             const skopSelect = document.getElementById('skop-select');
@@ -797,143 +914,30 @@
 
             let kerjaList = [];
 
-            // 1. Semak data Google Sheet
             if (cloudUnitMapping[selectedUnit] && cloudUnitMapping[selectedUnit][selectedSkop]) {
                 kerjaList = cloudUnitMapping[selectedUnit][selectedSkop];
-            } 
-            // 2. Semak Preset
-            else if (UNIT_DATA_PRESETS[selectedUnit] && UNIT_DATA_PRESETS[selectedUnit][selectedSkop]) {
+            } else if (UNIT_DATA_PRESETS[selectedUnit] && UNIT_DATA_PRESETS[selectedUnit][selectedSkop]) {
                 kerjaList = UNIT_DATA_PRESETS[selectedUnit][selectedSkop];
             }
 
             if (kerjaList.length > 0) {
-                kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Tugasan (${kerjaList.length} Pilihan) --</option>`;
+                kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Nama / Deskripsi Kerja (${kerjaList.length} Tugasan) --</option>`;
                 kerjaList.forEach(namaKerja => {
                     const opt = document.createElement('option');
                     opt.value = namaKerja;
                     opt.textContent = namaKerja;
                     kerjaSelect.appendChild(opt);
                 });
+                showToast(`Auto-load: ${kerjaList.length} tugasan kerja di bawah skop "${selectedSkop}".`, "info");
             } else {
                 kerjaSelect.innerHTML = `<option value="" disabled selected>-- Tiada senarai kerja khusus bagi skop ini --</option>`;
             }
 
-            // Semak jika nama skop mempunyai unsur mesyuarat
-            detectAndApplyMeetingMode(selectedSkop);
-
+            detectAndApplyMeetingMode("", selectedSkop);
             renderRecordsTable();
         }
 
-        // Semak adakah teks mengandungi kata kunci mesyuarat
-        function checkIsMeetingText(text) {
-            if (!text) return false;
-            const t = text.toLowerCase();
-            return t.includes("mesyuarat") || t.includes("meeting") || t.includes("jpka");
-        }
-
-        // Mengesan dan mengaktifkan mod mesyuarat secara automatik
-        function detectAndApplyMeetingMode(textToInspect) {
-            const isMeeting = checkIsMeetingText(textToInspect);
-            setMeetingMode(isMeeting);
-        }
-
-        // Tetapkan mod komponen kemajuan (Mesyuarat vs Standard)
-        function setMeetingMode(active) {
-            isMeetingMode = active;
-            const secMeeting = document.getElementById('section-progress-meeting');
-            const secStandard = document.getElementById('section-progress-standard');
-            const toggleLabel = document.getElementById('mode-toggle-label');
-
-            if (isMeetingMode) {
-                secMeeting.classList.remove('hidden');
-                secStandard.classList.add('hidden');
-                if (toggleLabel) toggleLabel.innerHTML = `<span class="text-indigo-600 font-bold">Mesyuarat (7 Kali)</span>`;
-            } else {
-                secMeeting.classList.add('hidden');
-                secStandard.classList.remove('hidden');
-                if (toggleLabel) toggleLabel.innerHTML = `<span>Standard (3 Fasa)</span>`;
-            }
-
-            calculatePercentage();
-        }
-
-        // Butang manual untuk menukar mod jika pengguna mahu mod mesyuarat secara sukarela
-        function toggleProgressModeManual() {
-            setMeetingMode(!isMeetingMode);
-            showToast(`Mod kemajuan ditukar kepada: ${isMeetingMode ? 'Mesyuarat (Sasaran 7 Kali)' : 'Standard (40/20/40)'}`, "info");
-        }
-
-        // Menetapkan bilangan mesyuarat (1 - 7)
-        function setMeetingCount(count) {
-            if (count < 0) count = 0;
-            if (count > 7) count = 7;
-            currentMeetingCount = count;
-            updateMeetingUI();
-            calculatePercentage();
-        }
-
-        // Tambah atau tolak bilangan mesyuarat
-        function adjustMeetingCount(delta) {
-            setMeetingCount(currentMeetingCount + delta);
-        }
-
-        // Mengemaskini UI visual mesyuarat (butang 1-7, bar kemajuan, teks)
-        function updateMeetingUI() {
-            const display = document.getElementById('meeting-percentage-display');
-            const bar = document.getElementById('meeting-progress-bar');
-            const desc = document.getElementById('meeting-count-desc');
-
-            // Pengiraan peratus: 7 kali = 100%
-            const percent = calculateMeetingPercentageVal(currentMeetingCount);
-
-            if (display) {
-                display.innerText = `${currentMeetingCount} / 7 (${percent}%)`;
-                display.className = currentMeetingCount === 7 
-                    ? "text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-600 text-white shadow-xs"
-                    : (currentMeetingCount > 0 
-                        ? "text-xs font-bold px-2.5 py-1 rounded-full bg-blue-600 text-white shadow-xs" 
-                        : "text-xs font-bold px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 shadow-xs");
-            }
-
-            if (bar) {
-                bar.style.width = `${percent}%`;
-                bar.className = currentMeetingCount === 7 
-                    ? "bg-emerald-400 h-full rounded-full transition-all duration-300"
-                    : "bg-blue-500 h-full rounded-full transition-all duration-300";
-            }
-
-            // Kemas kini gaya 7 butang langkah bagi tema biru gelap
-            for (let i = 1; i <= 7; i++) {
-                const btn = document.getElementById(`btn-meet-${i}`);
-                if (!btn) continue;
-                if (i <= currentMeetingCount) {
-                    btn.className = "meet-step-btn py-2 text-center rounded-lg border border-blue-500 bg-blue-600 text-white text-xs font-bold shadow-md shadow-blue-600/30 transition";
-                } else {
-                    btn.className = "meet-step-btn py-2 text-center rounded-lg border border-slate-800 bg-slate-950 hover:bg-slate-800 text-slate-300 text-xs font-bold transition";
-                }
-            }
-
-            if (desc) {
-                if (currentMeetingCount === 0) {
-                    desc.innerText = "Belum ada mesyuarat dijalankan.";
-                } else if (currentMeetingCount === 7) {
-                    desc.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Sasaran 7 kali mesyuarat selesai!</span>`;
-                } else {
-                    const baki = 7 - currentMeetingCount;
-                    desc.innerHTML = `Telah dijalankan <b>${currentMeetingCount} kali</b> (Baki: ${baki} sesi lagi).`;
-                }
-            }
-        }
-
-        // Formula kiraan peratus mesyuarat berasaskan 7 kali
-        function calculateMeetingPercentageVal(count) {
-            if (count >= 7) return 100;
-            if (count <= 0) return 0;
-            // 7 kali: 1 -> 14%, 2 -> 29%, 3 -> 43%, 4 -> 57%, 5 -> 71%, 6 -> 86%, 7 -> 100%
-            return Math.round((count / 7) * 100);
-        }
-
-        // Apabila Nama Kerja dipilih: Semak jika ada rekod wujud untuk auto-fill
+        // Apabila Nama Kerja dipilih: Semak jika data sedia ada wujud untuk auto-fill
         function handleKerjaChange() {
             const unit = document.getElementById('unit-select').value;
             const skop = document.getElementById('skop-select').value;
@@ -942,9 +946,7 @@
 
             if (!unit || !skop || !kerja) return;
 
-            // Auto-detect sama ada kerja atau skop berkaitan dengan mesyuarat
-            const isMeetingTask = checkIsMeetingText(kerja) || checkIsMeetingText(skop);
-            setMeetingMode(isMeetingTask);
+            detectAndApplyMeetingMode(kerja, skop);
 
             const existingRecord = currentSessionRecords.find(item => 
                 item.unit.trim().toLowerCase() === unit.trim().toLowerCase() &&
@@ -959,24 +961,30 @@
             const tickExecution = document.getElementById('tick-execution');
 
             if (existingRecord) {
-                // Isikan tarikh
-                dateStartInput.value = (existingRecord.tarikhMula && existingRecord.tarikhMula !== '-') ? normalizeDateString(existingRecord.tarikhMula) : new Date().toISOString().split('T')[0];
-                dateEndInput.value = (existingRecord.tarikhAkhir && existingRecord.tarikhAkhir !== '-') ? normalizeDateString(existingRecord.tarikhAkhir) : "";
+                if (existingRecord.tarikhMula && existingRecord.tarikhMula !== '-' && existingRecord.tarikhMula !== 'undefined') {
+                    dateStartInput.value = normalizeDateString(existingRecord.tarikhMula);
+                } else {
+                    dateStartInput.value = "";
+                }
+
+                if (existingRecord.tarikhAkhir && existingRecord.tarikhAkhir !== '-' && existingRecord.tarikhAkhir !== 'undefined') {
+                    dateEndInput.value = normalizeDateString(existingRecord.tarikhAkhir);
+                } else {
+                    dateEndInput.value = "";
+                }
 
                 calculateDueDate();
 
-                const percentNum = parseInt(String(existingRecord.peratus).replace(/[^0-9]/g, '')) || 0;
+                const percentNum = parsePercentageValue(existingRecord.peratus);
 
-                // Jika rekod mempunyai bilangan mesyuarat atau ini tugasan mesyuarat
-                if (existingRecord.meetingCount !== undefined && existingRecord.meetingCount !== null) {
-                    setMeetingMode(true);
-                    setMeetingCount(Number(existingRecord.meetingCount));
-                } else if (isMeetingMode) {
-                    // Kira balik anggaran bilangan mesyuarat daripada peratus
-                    const estimatedCount = Math.round((percentNum / 100) * 7);
-                    setMeetingCount(estimatedCount);
+                if (isMeetingMode) {
+                    if (existingRecord.meetingCount !== undefined && existingRecord.meetingCount !== null) {
+                        currentMeetingCount = parseInt(existingRecord.meetingCount) || 0;
+                    } else {
+                        currentMeetingCount = Math.min(currentMeetingTarget, Math.round((percentNum / 100) * currentMeetingTarget));
+                    }
+                    updateMeetingUI();
                 } else {
-                    // Kemas kini checkboxes standard mengikut nilai peratus
                     tickPaperwork.checked = false;
                     tickBroadcast.checked = false;
                     tickExecution.checked = false;
@@ -1000,26 +1008,31 @@
 
                 calculatePercentage();
                 btnSaveText.innerText = "Kemaskini Rekod Sedia Ada (Cloud)";
-                showToast(`Data sedia ada dimuatkan ke borang.`, "info");
+                showToast(`Data sedia ada bagi "${kerja}" telah dimuatkan ke borang.`, "success");
             } else {
                 btnSaveText.innerText = "Simpan & Hantar ke Cloud Google Sheet";
-                if (!dateStartInput.value) dateStartInput.value = new Date().toISOString().split('T')[0];
+                dateStartInput.value = new Date().toISOString().split('T')[0];
                 dateEndInput.value = "";
-                
-                tickPaperwork.checked = false;
-                tickBroadcast.checked = false;
-                tickExecution.checked = false;
-                setMeetingCount(0);
+
+                if (isMeetingMode) {
+                    currentMeetingCount = 0;
+                    updateMeetingUI();
+                } else {
+                    tickPaperwork.checked = false;
+                    tickBroadcast.checked = false;
+                    tickExecution.checked = false;
+                }
 
                 calculateDueDate();
                 calculatePercentage();
             }
         }
 
-        // Helper format tarikh ke YYYY-MM-DD
         function normalizeDateString(dateVal) {
             if (!dateVal) return "";
-            if (/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) return dateVal;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
+                return dateVal;
+            }
             if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateVal)) {
                 const parts = dateVal.split('/');
                 const day = parts[0].padStart(2, '0');
@@ -1028,11 +1041,12 @@
                 return `${year}-${month}-${day}`;
             }
             const d = new Date(dateVal);
-            if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+            if (!isNaN(d.getTime())) {
+                return d.toISOString().split('T')[0];
+            }
             return "";
         }
 
-        // Pengiraan Tempoh Baki / Hari
         function calculateDueDate() {
             const startVal = document.getElementById('date-start').value;
             const endVal = document.getElementById('date-end').value;
@@ -1054,7 +1068,7 @@
                 badge.innerText = "Ralat: Tarikh tamat sebelum tarikh mula";
                 badge.className = "font-bold text-rose-400";
             } else if (diffDays === 0) {
-                badge.innerText = "Hari yang sama (1 Hari)";
+                badge.innerText = "Hari yang sama (Hari ini)";
                 badge.className = "font-bold text-amber-400";
             } else {
                 badge.innerText = `${diffDays} Hari Tempoh Masa`;
@@ -1062,28 +1076,28 @@
             }
         }
 
-        // Pengiraan Peratusan Berdasarkan Mod (Mesyuarat vs Multiple Tick Standard)
+        // Pengiraan Peratusan (Sama ada Mod Mesyuarat atau Mod Standard)
         function calculatePercentage() {
             let total = 0;
 
             if (isMeetingMode) {
-                total = calculateMeetingPercentageVal(currentMeetingCount);
+                total = calculateMeetingPercentageVal(currentMeetingCount, currentMeetingTarget);
             } else {
-                const tick1 = document.getElementById('tick-paperwork').checked ? 40 : 0;
-                const tick2 = document.getElementById('tick-broadcast').checked ? 20 : 0;
-                const tick3 = document.getElementById('tick-execution').checked ? 40 : 0;
+                const tick1 = document.getElementById('tick-paperwork')?.checked ? 40 : 0;
+                const tick2 = document.getElementById('tick-broadcast')?.checked ? 20 : 0;
+                const tick3 = document.getElementById('tick-execution')?.checked ? 40 : 0;
                 total = tick1 + tick2 + tick3;
-            }
 
-            const percentDisplay = document.getElementById('percentage-display');
-            if (percentDisplay) {
-                percentDisplay.innerText = `${total}%`;
-                if (total === 100) {
-                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/50";
-                } else if (total > 0) {
-                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-800/50";
-                } else {
-                    percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700";
+                const percentDisplay = document.getElementById('percentage-display');
+                if (percentDisplay) {
+                    percentDisplay.innerText = `${total}%`;
+                    if (total === 100) {
+                        percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800";
+                    } else if (total > 0) {
+                        percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-800";
+                    } else {
+                        percentDisplay.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700";
+                    }
                 }
             }
 
@@ -1091,7 +1105,6 @@
             return total;
         }
 
-        // Kemas kini Paparan Status Automatik Tema Biru Gelap
         function updateStatusDisplay(percentage) {
             const statusContainer = document.getElementById('status-container');
             const statusText = document.getElementById('status-text');
@@ -1107,22 +1120,22 @@
                 iconClass = "bg-slate-600";
             } else if (percentage >= 1 && percentage < 100) {
                 statusName = "Dalam Tindakan";
-                colorClass = "bg-amber-950/40 border-amber-900/60 text-amber-300";
-                iconClass = "bg-amber-400 animate-pulse";
+                colorClass = "bg-amber-950/40 border-amber-800/80 text-amber-300";
+                iconClass = "bg-amber-500 animate-pulse";
             } else if (percentage === 100) {
                 statusName = "Selesai";
-                colorClass = "bg-emerald-950/40 border-emerald-900/60 text-emerald-300";
+                colorClass = "bg-emerald-950/40 border-emerald-800/80 text-emerald-300";
                 iconClass = "bg-emerald-400";
             }
 
-            statusContainer.className = `flex items-center gap-2 p-3 border rounded-xl ${colorClass}`;
+            statusContainer.className = `flex items-center gap-2.5 p-3 border rounded-xl ${colorClass}`;
             statusIcon.className = `w-3 h-3 rounded-full ${iconClass}`;
             statusText.innerText = `${statusName} (${percentage}%)`;
 
             return statusName;
         }
 
-        // Hantar dan Simpan Data Borang
+        // Simpan Data Borang
         async function handleFormSubmit(event) {
             event.preventDefault();
 
@@ -1136,25 +1149,28 @@
                 showToast("Sila pilih unit jabatan terlebih dahulu!", "error");
                 return;
             }
+
             if (!skop) {
                 showToast("Sila pilih skop kerja daripada senarai!", "error");
                 return;
             }
+
             if (!kerja) {
                 showToast("Sila pilih nama/deskripsi kerja!", "error");
                 return;
             }
+
             if (new Date(tarikhAkhir) < new Date(tarikhMula)) {
-                showToast("Tarikh tamat mestilah selepas atau sama dengan tarikh mula!", "error");
+                showToast("Tarikh tamat mestilah selepas tarikh mula!", "error");
                 return;
             }
 
-            const peratus = calculatePercentage();
+            const peratusVal = calculatePercentage();
             let statusText = "Belum Mula";
-            if (peratus >= 1 && peratus < 100) statusText = "Dalam Tindakan";
-            if (peratus === 100) statusText = "Selesai";
+            if (peratusVal >= 1 && peratusVal < 100) statusText = "Dalam Tindakan";
+            if (peratusVal === 100) statusText = "Selesai";
 
-            const diffDays = Math.max(0, Math.ceil((new Date(tarikhAkhir) - new Date(tarikhMula)) / (1000 * 60 * 60 * 24)));
+            const diffDays = Math.ceil((new Date(tarikhAkhir) - new Date(tarikhMula)) / (1000 * 60 * 60 * 24));
             const tempohDue = `${diffDays} Hari`;
 
             const recordItem = {
@@ -1165,9 +1181,11 @@
                 tarikhMula: tarikhMula,
                 tarikhAkhir: tarikhAkhir,
                 tempohDue: tempohDue,
-                peratus: `${peratus}%`,
+                tempoh: tempohDue,
+                peratus: `${peratusVal}%`,
                 status: statusText,
                 isMeeting: isMeetingMode,
+                meetingTarget: isMeetingMode ? currentMeetingTarget : null,
                 meetingCount: isMeetingMode ? currentMeetingCount : null,
                 timestamp: new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' })
             };
@@ -1185,36 +1203,37 @@
                 showToast(`Rekod sedia ada "${kerja}" telah dikemaskini.`, "success");
             } else {
                 currentSessionRecords.unshift(recordItem);
-                showToast(`Rekod baharu berjaya disimpan.`, "success");
+                showToast(`Rekod baharu berjaya disimpan pada sesi ini!`, "success");
             }
 
             saveLocalRecords();
             renderRecordsTable();
 
-            // Autosync ke Google Sheet
             if (webhookUrl) {
                 await syncToGoogleSheet(recordItem, isUpdate);
             }
 
-            // Kembalikan teks butang
             document.getElementById('btn-save-text').innerText = "Simpan & Hantar ke Cloud Google Sheet";
             resetWorkForm();
         }
 
-        // Set Semula Borang
         function resetWorkForm() {
             const unitSelect = document.getElementById('unit-select');
             if (unitSelect) unitSelect.value = "";
 
             const skopSelect = document.getElementById('skop-select');
-            if (skopSelect) skopSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit Dahulu --</option>`;
+            if (skopSelect) {
+                skopSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit Dahulu --</option>`;
+            }
 
             const kerjaSelect = document.getElementById('kerja-select');
-            if (kerjaSelect) kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>`;
+            if (kerjaSelect) {
+                kerjaSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Skop Kerja Dahulu --</option>`;
+            }
 
             const dateStart = document.getElementById('date-start');
             const dateEnd = document.getElementById('date-end');
-            if (dateStart) dateStart.value = new Date().toISOString().split('T')[0];
+            if (dateStart) dateStart.value = "";
             if (dateEnd) dateEnd.value = "";
 
             const dueDateBadge = document.getElementById('due-date-badge');
@@ -1223,62 +1242,42 @@
                 dueDateBadge.className = "font-bold text-slate-400";
             }
 
-            document.getElementById('tick-paperwork').checked = false;
-            document.getElementById('tick-broadcast').checked = false;
-            document.getElementById('tick-execution').checked = false;
+            const tick1 = document.getElementById('tick-paperwork');
+            const tick2 = document.getElementById('tick-broadcast');
+            const tick3 = document.getElementById('tick-execution');
+            if (tick1) tick1.checked = false;
+            if (tick2) tick2.checked = false;
+            if (tick3) tick3.checked = false;
 
-            // Reset mod mesyuarat
-            setMeetingCount(0);
+            currentMeetingCount = 0;
             setMeetingMode(false);
-
-            document.getElementById('btn-save-text').innerText = "Simpan & Hantar ke Cloud Google Sheet";
-
             calculatePercentage();
             renderRecordsTable(true);
         }
 
-        // Helper Memastikan Format Peratusan Seragam & Mengendalikan Format Perpuluhan Google Sheets (cth: 0.6 -> 60%)
+        // Parsing Peratusan Tepat (Kalis Ralat 0.6 bertukar ke 6%)
         function parsePercentageValue(val) {
             if (val === undefined || val === null || val === '') return 0;
-            
-            // Jika ia sudah nombor tulen
-            if (typeof val === 'number') {
-                if (val > 0 && val <= 1) {
-                    return Math.round(val * 100);
-                }
-                return Math.max(0, Math.min(100, Math.round(val)));
+            const str = String(val).trim();
+            if (str.includes('%')) {
+                const parsed = parseInt(str.replace(/[^0-9]/g, ''), 10);
+                return isNaN(parsed) ? 0 : Math.min(100, Math.max(0, parsed));
             }
-
-            const strVal = String(val).trim();
-            
-            // Jika rentetan mengandungi simbol %, ekstrak nombor sebelum %
-            if (strVal.includes('%')) {
-                const match = strVal.match(/(\d+(?:\.\d+)?)/);
-                if (match) {
-                    const parsed = parseFloat(match[1]);
-                    return Math.max(0, Math.min(100, Math.round(parsed)));
+            const floatNum = parseFloat(str);
+            if (!isNaN(floatNum)) {
+                if (floatNum > 0 && floatNum <= 1) {
+                    return Math.round(floatNum * 100);
                 }
+                return Math.min(100, Math.max(0, Math.round(floatNum)));
             }
-
-            // Jika rentetan nombor perpuluhan seperti "0.6" atau "0.60" dari Google Sheets
-            const parsedFloat = parseFloat(strVal);
-            if (!isNaN(parsedFloat)) {
-                if (parsedFloat > 0 && parsedFloat <= 1) {
-                    return Math.round(parsedFloat * 100);
-                }
-                return Math.max(0, Math.min(100, Math.round(parsedFloat)));
-            }
-
             return 0;
         }
 
-        // Helper Memastikan Format Paparan Peratusan Seragam (0% - 100%)
         function formatPercentageFixed(val) {
-            const num = parsePercentageValue(val);
-            return `${num}%`;
+            return `${parsePercentageValue(val)}%`;
         }
 
-        // Paparkan Rekod ke Jadual dengan sokongan tapisan & carian
+        // Paparan Rekod Jadual
         function renderRecordsTable(ignoreFilter = false) {
             const tbody = document.getElementById('session-records-body');
             const countBadge = document.getElementById('record-count-badge');
@@ -1293,7 +1292,6 @@
 
             let filteredRecords = [...currentSessionRecords];
 
-            // 1. Tapisan dropdown unit/skop
             if (!ignoreFilter && (selectedUnit || selectedSkop)) {
                 if (btnResetFilter) btnResetFilter.classList.remove('hidden');
 
@@ -1302,45 +1300,44 @@
                         item.unit.trim().toLowerCase() === selectedUnit.trim().toLowerCase() &&
                         item.skop.trim().toLowerCase() === selectedSkop.trim().toLowerCase()
                     );
-                    if (filterLabel) filterLabel.innerHTML = `<span class="text-blue-600 font-bold">${escapeHtml(selectedUnit)}</span> &rsaquo; <span class="text-slate-800 font-semibold">${escapeHtml(selectedSkop)}</span>`;
+                    if (filterLabel) filterLabel.innerHTML = `<span class="text-blue-400 font-bold">${escapeHtml(selectedUnit)}</span> &rsaquo; <span class="text-slate-200 font-semibold">${escapeHtml(selectedSkop)}</span>`;
                 } else if (selectedUnit) {
                     filteredRecords = filteredRecords.filter(item => 
                         item.unit.trim().toLowerCase() === selectedUnit.trim().toLowerCase()
                     );
-                    if (filterLabel) filterLabel.innerHTML = `<span class="text-blue-600 font-bold">${escapeHtml(selectedUnit)}</span> (Semua Skop)`;
+                    if (filterLabel) filterLabel.innerHTML = `<span class="text-blue-400 font-bold">${escapeHtml(selectedUnit)}</span> (Semua Skop)`;
                 }
             } else {
                 if (btnResetFilter) btnResetFilter.classList.add('hidden');
-                if (filterLabel) filterLabel.textContent = "Semua Rekod (Tiada Tapisan)";
+                if (filterLabel) filterLabel.textContent = "Semua Rekod (Tiada Tapisan Unit)";
             }
 
-            // 2. Tapisan carian teks (jika ditaip)
             if (searchQuery.trim() !== "") {
-                const query = searchQuery.trim().toLowerCase();
+                const q = searchQuery.toLowerCase().trim();
                 filteredRecords = filteredRecords.filter(item => 
-                    item.kerja.toLowerCase().includes(query) ||
-                    item.unit.toLowerCase().includes(query) ||
-                    item.skop.toLowerCase().includes(query) ||
-                    item.status.toLowerCase().includes(query)
+                    item.kerja.toLowerCase().includes(q) ||
+                    item.skop.toLowerCase().includes(q) ||
+                    item.unit.toLowerCase().includes(q) ||
+                    item.status.toLowerCase().includes(q)
                 );
             }
 
             countBadge.innerText = `${filteredRecords.length} / ${currentSessionRecords.length} Rekod`;
 
             if (filteredRecords.length === 0) {
-                let emptyMsg = "Belum ada rekod kerja yang diisi.";
+                let emptyMsg = "Belum ada rekod kerja yang diisi pada sesi ini.";
                 if (searchQuery.trim() !== "") {
-                    emptyMsg = `Tiada rekod sepadan dengan carian: <b>"${escapeHtml(searchQuery)}"</b>.`;
+                    emptyMsg = `Tiada rekod sepadan dengan carian: "<b>${escapeHtml(searchQuery)}</b>".`;
                 } else if (selectedUnit && selectedSkop) {
                     emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b> di bawah skop <b>${escapeHtml(selectedSkop)}</b>.`;
                 } else if (selectedUnit) {
-                    emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b>.`;
+                    emptyMsg = `Tiada rekod bagi unit <b>${escapeHtml(selectedUnit)}</b>. Sila isi borang di sebelah kiri.`;
                 }
 
                 tbody.innerHTML = `
                     <tr id="empty-row">
                         <td colspan="5" class="text-center py-12 text-slate-500">
-                            <i class="fa-regular fa-folder-open text-3xl mb-2 block text-slate-600"></i>
+                            <i class="fa-regular fa-folder-open text-3xl mb-2 block"></i>
                             ${emptyMsg}
                         </td>
                     </tr>
@@ -1352,33 +1349,36 @@
             filteredRecords.forEach(item => {
                 let statusBadge = "";
                 if (item.status === "Selesai") {
-                    statusBadge = '<span class="inline-block bg-emerald-950/70 border border-emerald-800/50 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Selesai</span>';
+                    statusBadge = '<span class="inline-block bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Selesai</span>';
                 } else if (item.status === "Dalam Tindakan") {
-                    statusBadge = '<span class="inline-block bg-amber-950/70 border border-amber-800/50 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Tindakan</span>';
+                    statusBadge = '<span class="inline-block bg-amber-950/80 border border-amber-800 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Tindakan</span>';
                 } else {
-                    statusBadge = '<span class="inline-block bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Belum Mula</span>';
+                    statusBadge = '<span class="inline-block bg-slate-800 border border-slate-700 text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-md leading-tight text-center">Belum Mula</span>';
                 }
 
                 const fixedPercentage = formatPercentageFixed(item.peratus);
 
-                // Label tambahan jika tugasan berasaskan mesyuarat
-                const isMeetingItem = item.isMeeting || checkIsMeetingText(item.kerja) || checkIsMeetingText(item.skop);
-                const meetingBadge = isMeetingItem ? `
-                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800/50">
-                        <i class="fa-solid fa-users-rectangle text-[9px]"></i> ${item.meetingCount !== null && item.meetingCount !== undefined ? item.meetingCount : Math.round((parseInt(fixedPercentage)/100)*7)}/7 Mesyuarat
-                    </span>` : '';
+                let meetingSubBadge = "";
+                const isItemMeet = item.isMeeting || checkIsMeetingText(`${item.kerja} ${item.skop}`);
+                if (isItemMeet) {
+                    const isJkkitm = isJkkitmMeeting(`${item.kerja} ${item.skop}`);
+                    const target = item.meetingTarget || (isJkkitm ? 4 : 7);
+                    const count = item.meetingCount !== null && item.meetingCount !== undefined 
+                        ? item.meetingCount 
+                        : Math.min(target, Math.round((parsePercentageValue(item.peratus) / 100) * target));
+
+                    meetingSubBadge = `<span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-800/70 font-semibold ml-1.5"><i class="fa-solid fa-users text-[8px]"></i> ${count}/${target} ${isJkkitm ? 'JKKITM' : 'Mesyuarat'}</span>`;
+                }
 
                 html += `
-                    <tr class="hover:bg-slate-800/40 transition border-b border-slate-800 align-top">
-                        <!-- Ruang Kerja & Unit -->
-                        <td class="py-2.5 px-3 break-words">
-                            <div class="font-semibold text-slate-100 leading-snug flex flex-wrap items-center gap-1.5">
+                    <tr class="hover:bg-slate-800/40 transition border-b border-slate-800/70 align-top">
+                        <td class="py-2.5 px-3.5 break-words">
+                            <div class="font-semibold text-slate-100 leading-snug flex items-center flex-wrap">
                                 <span>${escapeHtml(item.kerja)}</span>
-                                ${meetingBadge}
+                                ${meetingSubBadge}
                             </div>
                             <div class="text-[11px] text-slate-400 mt-0.5 leading-tight">${escapeHtml(item.unit)} &bull; <span class="text-slate-500">${escapeHtml(item.skop)}</span></div>
                         </td>
-                        <!-- Tarikh Mula & Tamat -->
                         <td class="py-2.5 px-2 text-[11px] text-slate-300">
                             <div class="flex items-center gap-1 font-mono text-[10.5px]">
                                 <span class="text-slate-500 text-[9px] uppercase font-sans">M:</span> ${item.tarikhMula}
@@ -1387,18 +1387,15 @@
                                 <span class="text-slate-500 text-[9px] uppercase font-sans">T:</span> ${item.tarikhAkhir}
                             </div>
                         </td>
-                        <!-- Tempoh Masa -->
                         <td class="py-2.5 px-2 text-center text-slate-300">
-                            <span class="inline-block font-semibold bg-slate-800/80 border border-slate-700/60 text-slate-300 px-1.5 py-0.5 rounded text-[10.5px] leading-tight">
-                                ${escapeHtml(item.tempohDue)}
+                            <span class="inline-block font-semibold bg-slate-950 border border-slate-800 text-slate-300 px-1.5 py-0.5 rounded text-[10.5px] leading-tight">
+                                ${item.tempohDue}
                             </span>
                         </td>
-                        <!-- Peratusan -->
-                        <td class="py-2.5 px-1 text-center font-bold text-slate-100 text-xs font-mono">
+                        <td class="py-2.5 px-2 text-center font-bold text-slate-200 text-xs font-mono">
                             ${fixedPercentage}
                         </td>
-                        <!-- Status -->
-                        <td class="py-2.5 px-2 text-right">
+                        <td class="py-2.5 px-3 text-right">
                             ${statusBadge}
                         </td>
                     </tr>
@@ -1409,39 +1406,27 @@
         }
 
         // Carian Masa Nyata
-        function handleSearch() {
-            const input = document.getElementById('table-search-input');
-            searchQuery = input ? input.value : "";
-            renderRecordsTable();
+        function handleSearchInput(e) {
+            searchQuery = e.target.value;
+            renderRecordsTable(true);
         }
 
-        // Tetapkan semula tapisan
         function resetTableFilter() {
+            searchQuery = "";
             const searchInput = document.getElementById('table-search-input');
             if (searchInput) searchInput.value = "";
-            searchQuery = "";
             renderRecordsTable(true);
             showToast("Memaparkan semua rekod tanpa tapisan.", "info");
-        }
-
-        // Kosongkan rekod sesi
-        function clearCurrentSessionRecords() {
-            if (currentSessionRecords.length === 0) return;
-            currentSessionRecords = [];
-            saveLocalRecords();
-            renderRecordsTable();
-            showToast("Senarai paparan sesi semasa telah dikosongkan.", "info");
         }
 
         // Hantar Data ke Google Sheets Webhook
         async function syncToGoogleSheet(record, isUpdate = false) {
             const btnSave = document.getElementById('btn-save');
             const originalText = btnSave.innerHTML;
-            btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${isUpdate ? 'Mengemaskini baris di Google Sheet...' : 'Menghantar ke Google Sheet...'}</span>`;
+            btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${isUpdate ? 'Mengemaskini di Google Sheet...' : 'Menghantar ke Google Sheet...'}</span>`;
             btnSave.disabled = true;
 
             try {
-                // Sertakan maklumat bilangan mesyuarat jika berkaitan
                 const payload = {
                     action: "upsertWork",
                     data: {
@@ -1452,7 +1437,10 @@
                         tarikhAkhir: record.tarikhAkhir,
                         peratus: record.peratus,
                         status: record.status,
-                        nota: record.isMeeting ? `Mesyuarat: ${record.meetingCount}/7 kali dijalankan` : ''
+                        tempoh: record.tempohDue || record.tempoh || '',
+                        tempohDue: record.tempohDue || record.tempoh || '',
+                        isMeeting: record.isMeeting || false,
+                        meetingCount: record.meetingCount !== null ? record.meetingCount : ''
                     }
                 };
 
@@ -1464,20 +1452,20 @@
                     body: JSON.stringify(payload)
                 });
 
-                showToast(isUpdate ? "Berjaya! Google Sheet telah dikemaskini." : "Berjaya! Rekod baharu ditambah ke Google Sheet.", "success");
+                showToast(isUpdate ? "Berjaya! Rekod Google Sheet dikemaskini." : "Berjaya! Rekod baharu ditambah ke Google Sheet.", "success");
             } catch (error) {
                 console.error("Ralat simpan ke cloud:", error);
-                showToast("Ralat menghubungi Google Sheet.", "error");
+                showToast("Ralat menghubungi Google Sheet. Semak sambungan internet.", "error");
             } finally {
                 btnSave.innerHTML = originalText;
                 btnSave.disabled = false;
             }
         }
 
-        // Tarik Data (Sync Dua Hala) dari Google Sheets
+        // Tarik Data (Sync Live) dari Google Sheets
         async function fetchSheetData() {
             if (!webhookUrl) {
-                showToast("URL Webhook tidak ditemui!", "error");
+                showToast("URL Webhook tidak sah!", "error");
                 return;
             }
 
@@ -1489,7 +1477,7 @@
             if (syncText) syncText.textContent = "Refreshing...";
             if (btnSync) btnSync.disabled = true;
 
-            showToast("Refresh data terkini daripada Cloud...", "info");
+            showToast("Kemaskini data live...", "info");
 
             try {
                 const cacheBuster = `t=${Date.now()}`;
@@ -1502,17 +1490,19 @@
                     headers: { 'Accept': 'application/json' }
                 });
 
-                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+                if (!res.ok) {
+                    throw new Error(`HTTP Error: ${res.status}`);
+                }
 
                 const result = await res.json();
                 processFetchedData(result);
             } catch (fetchErr) {
-                console.warn("Fetch terus disekat oleh pelayar (CORS/file://), beralih ke mod JSONP...", fetchErr);
+                console.warn("Fetch standard disekat (CORS/file://), beralih ke mod suntikan JSONP...", fetchErr);
                 try {
                     await fetchViaJsonp();
                 } catch (jsonpErr) {
-                    console.error("Fetch & JSONP gagal:", jsonpErr);
-                    showToast("Tidak dapat menyegerak dengan Google Sheet secara langsung.", "error");
+                    console.error("Kedua-dua fetch & JSONP gagal:", jsonpErr);
+                    showToast("Gagal menarik data dari Google Sheet. Semak status deploy Web App.", "error");
                 }
             } finally {
                 if (syncIcon) syncIcon.classList.remove('fa-spin');
@@ -1521,7 +1511,6 @@
             }
         }
 
-        // Sandaran JSONP jika fail dibuka secara tempatan (file:///)
         function fetchViaJsonp() {
             return new Promise((resolve, reject) => {
                 const callbackName = 'googleSheetCallback_' + Date.now();
@@ -1560,26 +1549,49 @@
                 currentSessionRecords = result.data.map((row, idx) => {
                     const nama = row.namaKerja || row[0] || 'Tugasan';
                     const skop = row.skopKerja || row[2] || 'Skop Am';
+                    const tarikhMulaVal = row.tarikhMula || row[3] || '-';
+                    const tarikhAkhirVal = row.tarikhAkhir || row[4] || '-';
                     const peratusRaw = row.peratus !== undefined && row.peratus !== null ? row.peratus : (row[5] !== undefined ? row[5] : '0%');
                     
-                    // Gunakan pengurai tepat untuk mengelak 0.6 menjadi 6%
                     const percentNum = parsePercentageValue(peratusRaw);
                     const peratusFormatted = `${percentNum}%`;
 
-                    const isMeet = checkIsMeetingText(nama) || checkIsMeetingText(skop);
-                    const countMeet = isMeet ? Math.min(7, Math.round((percentNum / 100) * 7)) : null;
+                    // Ambil nilai dari Kolum H (indeks 7 dalam array 0-based atau properti row.tempoh / row.tempohDue)
+                    let tempohVal = row.tempoh || row.tempohDue || (row[7] !== undefined && row[7] !== null ? String(row[7]).trim() : '');
+
+                    // Jika Kolum H masih kosong, hitung tempoh automatik berasaskan tarikh mula & tamat
+                    if (!tempohVal && tarikhMulaVal !== '-' && tarikhAkhirVal !== '-') {
+                        const d1 = new Date(tarikhMulaVal);
+                        const d2 = new Date(tarikhAkhirVal);
+                        if (!isNaN(d1.getTime()) && !isNaN(d2.getTime())) {
+                            const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+                            tempohVal = `${diff} Hari`;
+                        } else {
+                            tempohVal = '-';
+                        }
+                    } else if (!tempohVal) {
+                        tempohVal = '-';
+                    }
+
+                    const combined = `${nama} ${skop}`;
+                    const isMeet = checkIsMeetingText(combined);
+                    const isJkkitm = isJkkitmMeeting(combined);
+                    const targetCount = isJkkitm ? 4 : 7;
+                    const countMeet = isMeet ? Math.min(targetCount, Math.round((percentNum / 100) * targetCount)) : null;
 
                     return {
                         id: Date.now() + idx,
                         kerja: nama,
                         unit: row.unit || row[1] || 'Unit Pentadbiran & Sumber Manusia',
                         skop: skop,
-                        tarikhMula: row.tarikhMula || row[3] || '-',
-                        tarikhAkhir: row.tarikhAkhir || row[4] || '-',
-                        tempohDue: 'Live Sync',
+                        tarikhMula: tarikhMulaVal,
+                        tarikhAkhir: tarikhAkhirVal,
+                        tempohDue: tempohVal,
+                        tempoh: tempohVal,
                         peratus: peratusFormatted,
                         status: row.status || row[6] || (percentNum === 100 ? 'Selesai' : (percentNum > 0 ? 'Dalam Tindakan' : 'Belum Mula')),
                         isMeeting: isMeet,
+                        meetingTarget: isMeet ? targetCount : null,
                         meetingCount: countMeet,
                         timestamp: 'Awan'
                     };
@@ -1588,7 +1600,6 @@
                 saveLocalRecords();
                 renderRecordsTable();
 
-                // Ekstrak hierarki unit & skop
                 cloudUnitMapping = {};
                 result.data.forEach(row => {
                     const namaKerja = String(row.namaKerja || row[0] || '').trim();
@@ -1611,7 +1622,7 @@
                 const sheetUnits = Object.keys(cloudUnitMapping);
                 if (sheetUnits.length > 0) {
                     const unitSelect = document.getElementById('unit-select');
-                    unitSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit (${sheetUnits.length} Pilihan) --</option>`;
+                    unitSelect.innerHTML = `<option value="" disabled selected>-- Sila Pilih Unit --</option>`;
                     sheetUnits.forEach(unitName => {
                         const opt = document.createElement('option');
                         opt.value = unitName;
@@ -1622,59 +1633,87 @@
                     const badge = document.getElementById('unit-source-badge');
                     if (badge) {
                         badge.textContent = `Langkah 1 (${sheetUnits.length} Pilihan)`;
-                        badge.className = "text-[11px] bg-emerald-950/70 text-emerald-300 px-2 py-0.5 rounded-full font-medium border border-emerald-800/50";
+                        badge.className = "text-[11px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-2.5 py-0.5 rounded-full font-medium";
                     }
                 }
 
-                showToast(`Penyegerakan selesai! ${currentSessionRecords.length} rekod dikemaskini dari Awan.`, "success");
+                showToast(`Kemaskini selesai! ${currentSessionRecords.length} data diterima.`, "success");
             } else {
-                showToast("Penyegerakan berjaya namun tiada baris data ditemui.", "info");
+                showToast("Format respons kosong atau tidak padan.", "error");
             }
         }
 
-        // Eksport Data ke CSV
-        function exportToCSV() {
+        // Eksport Fail CSV
+        function exportToCsv() {
             if (currentSessionRecords.length === 0) {
                 showToast("Tiada rekod untuk dieksport!", "error");
                 return;
             }
 
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-            csvContent += "Nama Kerja,Unit,Skop Kerja,Tarikh Mula,Tarikh Tamat,Tempoh,Peratusan,Status\n";
+            const headers = ["Nama Kerja", "Unit", "Skop Kerja", "Tarikh Mula", "Tarikh Tamat", "Tempoh", "Kemajuan", "Status"];
+            const rows = currentSessionRecords.map(r => [
+                `"${(r.kerja || '').replace(/"/g, '""')}"`,
+                `"${(r.unit || '').replace(/"/g, '""')}"`,
+                `"${(r.skop || '').replace(/"/g, '""')}"`,
+                `"${r.tarikhMula || '-'}"`,
+                `"${r.tarikhAkhir || '-'}"`,
+                `"${r.tempohDue || '-'}"`,
+                `"${r.peratus || '0%'}"`,
+                `"${r.status || '-'}"`
+            ]);
 
-            currentSessionRecords.forEach(r => {
-                const escapeCsv = (str) => `"${String(str || '').replace(/"/g, '""')}"`;
-                const row = [
-                    escapeCsv(r.kerja),
-                    escapeCsv(r.unit),
-                    escapeCsv(r.skop),
-                    escapeCsv(r.tarikhMula),
-                    escapeCsv(r.tarikhAkhir),
-                    escapeCsv(r.tempohDue),
-                    escapeCsv(r.peratus),
-                    escapeCsv(r.status)
-                ].join(",");
-                csvContent += row + "\n";
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Status_Kerja_Jabatan_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
+            const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\r\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `Status_Kerja_Jabatan_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
             showToast("Fail CSV berjaya dimuat turun!", "success");
         }
 
-        // Escape HTML untuk mengelak XSS
         function escapeHtml(string) {
-            if (!string) return '';
             const div = document.createElement('div');
             div.innerText = string;
             return div.innerHTML;
         }
+
+        // Autosegerak semasa mula jika ada sambungan
+        function autoSyncInitial() {
+            if (navigator.onLine && webhookUrl) {
+                fetchSheetData();
+            }
+        }
+
+        // Daftarkan fungsi ke skop global window
+        window.setMeetingCount = setMeetingCount;
+        window.adjustMeetingCount = adjustMeetingCount;
+        window.toggleProgressModeManual = toggleProgressModeManual;
+        window.setMeetingMode = setMeetingMode;
+        window.handleAuthSubmit = handleAuthSubmit;
+        window.togglePasswordVisibility = togglePasswordVisibility;
+        window.handleLogout = handleLogout;
+        window.handleLoadUnitData = handleLoadUnitData;
+        window.handleSkopChange = handleSkopChange;
+        window.handleKerjaChange = handleKerjaChange;
+        window.calculateDueDate = calculateDueDate;
+        window.calculatePercentage = calculatePercentage;
+        window.handleFormSubmit = handleFormSubmit;
+        window.renderRecordsTable = renderRecordsTable;
+        window.handleSearchInput = handleSearchInput;
+        window.resetTableFilter = resetTableFilter;
+        window.fetchSheetData = fetchSheetData;
+        window.exportToCsv = exportToCsv;
+
+        // Inisialisasi Aplikasi
+        window.addEventListener('DOMContentLoaded', () => {
+            initAuth();
+            loadLocalRecords();
+            renderRecordsTable();
+            autoSyncInitial();
+        });
     </script>
 </body>
 </html>
